@@ -1,5 +1,6 @@
 import React from "react";
 import objectsStore from "../stores/ObjectsStore.js";
+import AppActions from "../actions/AppActions.js";
 
 function getAppState() {
   return {
@@ -22,12 +23,16 @@ const App = React.createClass({
 
   render: function() {
     return (
-      <div>{this.state.objects}</div>
+      <div onClick={this._onClick}>{this.state.objects}</div>
     );
   },
 
   _onChange: function() {
-    this.setState(getTodoState());
+    this.setState(getAppState());
+  },
+
+  _onClick: function() {
+    AppActions.increase();
   }
 });
 

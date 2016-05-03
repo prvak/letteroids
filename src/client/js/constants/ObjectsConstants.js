@@ -1,1 +1,5 @@
-export const OBJECTS_CREATE = "OBJECTS_CREATE";
+const ObjectsConstants = {
+  OBJECTS_CREATE: "OBJECTS_CREATE"
+};
+
+export default ObjectsConstants;

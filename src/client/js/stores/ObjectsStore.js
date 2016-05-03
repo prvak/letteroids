@@ -1,7 +1,7 @@
 import events from "events";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
-import OBJECTS_CREATE from "../constants/ObjectsConstants";
+import ObjectsConstants from "../constants/ObjectsConstants";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
@@ -41,9 +41,9 @@ const store = new ObjectsStore();
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
   var text;
-
+  console.log("Dispatching:", action);
   switch(action.actionType) {
-    case ObjectsConstants.ADD_OBJECT:
+    case ObjectsConstants.OBJECTS_CREATE:
       _objects += 1;
       store.emitChange();
       break;
