@@ -1,0 +1,29 @@
+#main {
+  position: absolute;
+  background-color: #ffffff;
+  width: 100%;
+  top: 0px;
+  bottom: 0px;
+}
+
+#app {
+  position: absolute;
+  background-color: #fff0f0;
+  top: 0px;
+  bottom: 0px;
+  width: 100%;
+}
+
+.space {
+  position: absolute;
+  background-color: #f0f0ff;
+  top: 20px;
+  bottom: 20px;
+  left: 20px;
+  right: 20px;
+}
+
+.ship {
+  position: absolute;
+  background-color: #aa5555;
+}

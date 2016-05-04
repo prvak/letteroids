@@ -1,10 +1,10 @@
 import React from "react";
-import objectsStore from "../stores/ObjectsStore.js";
-import AppActions from "../actions/AppActions.js";
+import objectsStore from "../stores/ObjectsStore";
+import Space from "../components/Space.react";
 
 function getAppState() {
   return {
-    objects: objectsStore.getAll(),
+    ships: objectsStore.getShips(),
   };
 }
 
@@ -23,17 +23,15 @@ const App = React.createClass({
 
   render: function() {
     return (
-      <div onClick={this._onClick}>{this.state.objects}</div>
+      <div id="app">
+        <Space ships={this.state.ships} />
+      </div>
     );
   },
 
   _onChange: function() {
     this.setState(getAppState());
   },
-
-  _onClick: function() {
-    AppActions.increase();
-  }
 });
 
 export default App;

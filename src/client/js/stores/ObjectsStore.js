@@ -6,15 +6,16 @@ import ObjectsConstants from "../constants/ObjectsConstants";
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
-let _objects = 0;
+let _ships = [];
+let _nextId = 1;
 
 class ObjectsStore extends EventEmitter {
   /**
    * Get the entire collection of TODOs.
    * @return {object}
    */
-  getAll() {
-    return _objects;
+  getShips() {
+    return _ships;
   }
 
   emitChange() {
@@ -44,7 +45,10 @@ AppDispatcher.register((action) => {
   console.log("Dispatching:", action);
   switch(action.actionType) {
     case ObjectsConstants.OBJECTS_CREATE:
-      _objects += 1;
+      _ships.push({
+        position: action.position,
+        id: _nextId++,
+      });
       store.emitChange();
       break;
 
