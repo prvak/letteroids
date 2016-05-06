@@ -52,7 +52,6 @@ const store = new ObjectsStore();
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
-  console.log("Dispatching:", action);
   switch (action.actionType) {
     case ObjectsConstants.OBJECTS_CREATE:
       _ships.push({
@@ -62,7 +61,10 @@ AppDispatcher.register((action) => {
       });
       store.emitChange();
       break;
-
+    case ObjectsConstants.OBJECTS_ROTATE:
+      _ships[0].rotation += action.rotationChange;
+      store.emitChange();
+      break;
     default:
       // no op
   }

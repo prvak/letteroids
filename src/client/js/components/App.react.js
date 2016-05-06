@@ -1,6 +1,7 @@
 import React from "react";
 import objectsStore from "../stores/ObjectsStore";
 import Space from "../components/Space.react";
+import SpaceActions from "../actions/SpaceActions";
 
 function getAppState() {
   return {
@@ -16,19 +17,39 @@ class App extends React.Component {
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange.bind(this));
+    document.addEventListener("keydown", this._onKeyPress.bind(this));
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange.bind(this));
+    document.removeEventListener("keydown", this._onKeyPress.bind(this));
   }
 
   _onChange() {
     this.setState(getAppState());
   }
 
+  _onKeyPress(event) {
+    this.state.ships.forEach((ship) => {
+      switch (event.code) {
+        case "ArrowLeft":
+          SpaceActions.rotateObject(ship.id, -5);
+          break;
+        case "ArrowRight":
+          SpaceActions.rotateObject(ship.id, 5);
+          break;
+        default:
+          break;
+      }
+    });
+  }
+
   render() {
+    const onKeyPress = this._onKeyPress.bind();
     return (
-      <div id="app">
+      <div id="app"
+        onKeyPress={onKeyPress}
+      >
         <Space ships={this.state.ships} />
       </div>
     );

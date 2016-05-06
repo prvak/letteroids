@@ -9,6 +9,13 @@ const SpaceActions = {
       rotation,
     });
   },
+  rotateObject: (objectId, rotationChange) => {
+    AppDispatcher.dispatch({
+      actionType: ObjectsConstants.OBJECTS_ROTATE,
+      objectId,
+      rotationChange,
+    });
+  },
 };
 
 export default SpaceActions;
