@@ -6,7 +6,18 @@ import ObjectsConstants from "../constants/ObjectsConstants";
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
-const _ships = [];
+// List of all ships.
+const _ships = [
+  {
+    position: {
+      x: 0.5,
+      y: 0.5,
+    },
+    rotation: 0,
+  },
+];
+
+// Each object has a unique ID. This is incremented each time a new object is created.
 let _nextId = 1;
 
 class ObjectsStore extends EventEmitter {
