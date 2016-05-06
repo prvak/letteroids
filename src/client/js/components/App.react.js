@@ -9,16 +9,17 @@ function getAppState() {
 }
 
 class App extends React.Component {
-  getInitialState() {
-    return getAppState();
+  constructor() {
+    super();
+    this.state = getAppState();
   }
 
   componentDidMount() {
-    objectsStore.addChangeListener(this._onChange);
+    objectsStore.addChangeListener(this._onChange.bind(this));
   }
 
   componentWillUnmount() {
-    objectsStore.removeChangeListener(this._onChange);
+    objectsStore.removeChangeListener(this._onChange.bind(this));
   }
 
   _onChange() {

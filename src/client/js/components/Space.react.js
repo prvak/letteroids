@@ -4,18 +4,19 @@ import SpaceActions from "../actions/SpaceActions";
 import Ship from "../components/Ship.react";
 
 class Space extends React.Component {
-  getInitialState() {
-    return {
+  constructor() {
+    super();
+    this.state = {
       ships: objectsStore.getShips(),
     };
   }
 
   componentDidMount() {
-    objectsStore.addChangeListener(this._onChange);
+    objectsStore.addChangeListener(this._onChange.bind(this));
   }
 
   componentWillUnmount() {
-    objectsStore.removeChangeListener(this._onChange);
+    objectsStore.removeChangeListener(this._onChange.bind(this));
   }
 
   _onChange() {
@@ -55,8 +56,12 @@ class Space extends React.Component {
       return <Ship position={ship.position} key={ship.id} />;
     });
     console.log("Render Space:", ships);
+    const onClick = this._onClick.bind(this);
     return (
-      <div className="space" onClick={this._onClick}>
+      <div
+        className="space"
+        onClick={onClick}
+      >
         {ships}
       </div>
     );

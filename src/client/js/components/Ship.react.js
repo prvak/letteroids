@@ -1,18 +1,23 @@
 import React from "react";
 
 class Ship extends React.Component {
-  getInitialState() {
-    return {
-      selected: false,
+  constructor() {
+    super();
+    this.state = {
+      isSelected: false,
     };
   }
 
   _onClick(event) {
     event.stopPropagation();
+    const newState = {
+      isSelected: !this.state.isSelected,
+    };
+    this.setState(newState);
   }
 
   render() {
-    const size = 20; // px
+    const size = this.state.isSelected ? 30 : 20; // px
     const style = {
       left: `${this.props.position.x * 100}%`,
       top: `${this.props.position.y * 100}%`,
@@ -21,10 +26,11 @@ class Ship extends React.Component {
       marginTop: `${-size / 2}px`,
       marginLeft: `${-size / 2}px`,
     };
+    const onClick = this._onClick.bind(this);
     return (
       <span className="ship"
         style={style}
-        onClick={this._onClick}
+        onClick={onClick}
       >
         X
       </span>
@@ -33,10 +39,7 @@ class Ship extends React.Component {
 }
 
 Ship.propTypes = {
-  position: React.PropTypes.object({
-    x: React.PropTypes.number.isRequired,
-    y: React.PropTypes.number.isRequired,
-  }).isRequired,
+  position: React.PropTypes.object.isRequired,
 };
 
 export default Ship;
