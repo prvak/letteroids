@@ -1,4 +1,5 @@
 import events from "events";
+import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
 import ObjectsConstants from "../constants/ObjectsConstants";
@@ -7,10 +8,10 @@ const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
 // All ships indexed by object ID.
-const _ships = {};
+let _ships = new Immutable.Map({});
 
 // All objects (including ships) indexed by object ID.
-const _objects = {};
+let _objects = new Immutable.Map({});
 
 // Each object has a unique ID. This is incremented each time a new object is created.
 let _nextObjectId = 1;
@@ -40,17 +41,20 @@ class ObjectsStore extends EventEmitter {
 
   addShip(position, rotation) {
     const id = _nextObjectId++;
-    const ship = {
+    const ship = new Immutable.Map({
       position,
       rotation,
       id,
-    };
-    _ships[id] = ship;
-    _objects[id] = ship;
+    });
+    _ships = _ships.set(id, ship);
+    _objects = _objects.set(id, ship);
   }
 
   rotateObject(objectId, rotationChange) {
-    _objects[objectId].rotation += rotationChange;
+    let object = _objects.get(objectId);
+    object = object.set("rotation", object.get("rotation") + rotationChange);
+    _objects = _objects.set(objectId, object);
+    _ships = _ships.set(objectId, object);
   }
 }
 

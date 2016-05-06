@@ -51,12 +51,12 @@ class Space extends React.Component {
   }
 
   render() {
-    const ships = Object.keys(this.props.ships).map((objectId) => {
-      const ship = this.props.ships[objectId];
-      return (<Ship
-        position={ship.position}
-        rotation={ship.rotation}
-        key={objectId}
+    const ships = [];
+    this.props.ships.forEach((ship) => {
+      ships.push(<Ship
+        position={ship.get("position")}
+        rotation={ship.get("rotation")}
+        key={ship.get("id")}
       />);
     });
     const onClick = this._onClick.bind(this);
