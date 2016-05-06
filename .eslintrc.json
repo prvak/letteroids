@@ -1,0 +1,10 @@
+{
+  "extends": "airbnb",
+  "rules": {
+    "quotes": [2, "double", "avoid-escape"],
+    "arrow-body-style": [2, "always"]
+  },
+  "env": {
+    "mocha": true
+  }
+}
