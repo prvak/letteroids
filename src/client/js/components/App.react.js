@@ -8,30 +8,30 @@ function getAppState() {
   };
 }
 
-const App = React.createClass({
-  getInitialState: function() {
+class App extends React.Component {
+  getInitialState() {
     return getAppState();
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
-  },
+  }
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-  },
+  }
 
-  render: function() {
+  _onChange() {
+    this.setState(getAppState());
+  }
+
+  render() {
     return (
       <div id="app">
         <Space ships={this.state.ships} />
       </div>
     );
-  },
-
-  _onChange: function() {
-    this.setState(getAppState());
-  },
-});
+  }
+}
 
 export default App;

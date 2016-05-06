@@ -1,13 +1,17 @@
 import React from "react";
 
-const Ship = React.createClass({
-  getInitialState: function() {
+class Ship extends React.Component {
+  getInitialState() {
     return {
       selected: false,
     };
-  },
+  }
 
-  render: function() {
+  _onClick(event) {
+    event.stopPropagation();
+  }
+
+  render() {
     const size = 20; // px
     const style = {
       left: `${this.props.position.x * 100}%`,
@@ -20,15 +24,19 @@ const Ship = React.createClass({
     return (
       <span className="ship"
         style={style}
-        onClick={this._onClick}>
+        onClick={this._onClick}
+      >
         X
       </span>
     );
-  },
-
-  _onClick: function(event) {
-    event.stopPropagation();
   }
-});
+}
+
+Ship.propTypes = {
+  position: React.PropTypes.object({
+    x: React.PropTypes.number.isRequired,
+    y: React.PropTypes.number.isRequired,
+  }).isRequired,
+};
 
 export default Ship;

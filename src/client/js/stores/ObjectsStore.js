@@ -6,7 +6,7 @@ import ObjectsConstants from "../constants/ObjectsConstants";
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
-let _ships = [];
+const _ships = [];
 let _nextId = 1;
 
 class ObjectsStore extends EventEmitter {
@@ -41,9 +41,8 @@ const store = new ObjectsStore();
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
-  var text;
   console.log("Dispatching:", action);
-  switch(action.actionType) {
+  switch (action.actionType) {
     case ObjectsConstants.OBJECTS_CREATE:
       _ships.push({
         position: action.position,

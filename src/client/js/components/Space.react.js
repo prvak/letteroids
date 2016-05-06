@@ -3,22 +3,54 @@ import objectsStore from "../stores/ObjectsStore";
 import SpaceActions from "../actions/SpaceActions";
 import Ship from "../components/Ship.react";
 
-const Space = React.createClass({
-  getInitialState: function() {
+class Space extends React.Component {
+  getInitialState() {
     return {
       ships: objectsStore.getShips(),
     };
-  },
+  }
 
-  componentDidMount: function() {
+  componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
-  },
+  }
 
-  componentWillUnmount: function() {
+  componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-  },
+  }
 
-  render: function() {
+  _onChange() {
+    return {
+      ships: objectsStore.getShips(),
+    };
+  }
+
+  _onClick(event) {
+    const position = this._relativeMousePosition(event);
+    console.log("New Ship", position.x, position.y);
+    SpaceActions.addObject(position);
+  }
+
+  _relativeMousePosition(event) {
+    let totalOffsetX = 0;
+    let totalOffsetY = 0;
+    let canvasX = 0;
+    let canvasY = 0;
+    let currentElement = event.currentTarget;
+    console.log(currentElement);
+
+    do {
+      totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
+      totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
+      currentElement = currentElement.offsetParent;
+    } while (currentElement);
+
+    canvasX = (event.pageX - totalOffsetX) / event.currentTarget.clientWidth;
+    canvasY = (event.pageY - totalOffsetY) / event.currentTarget.clientHeight;
+
+    return { x: canvasX, y: canvasY };
+  }
+
+  render() {
     const ships = this.props.ships.map((ship) => {
       return <Ship position={ship.position} key={ship.id} />;
     });
@@ -28,40 +60,11 @@ const Space = React.createClass({
         {ships}
       </div>
     );
-  },
+  }
+}
 
-  _onChange: function() {
-    return {
-      ships: objectsStore.getShips(),
-    };
-  },
-
-  _onClick: function(event) {
-    const position = this._relativeMousePosition(event);
-    console.log("New Ship", position.x, position.y);
-    SpaceActions.addObject(position);
-  },
-
-  _relativeMousePosition: function(event) {
-    let totalOffsetX = 0;
-    let totalOffsetY = 0;
-    let canvasX = 0;
-    let canvasY = 0;
-    let currentElement = event.currentTarget;
-    console.log(currentElement);
-
-    do{
-        totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-        totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-    }
-    while(currentElement = currentElement.offsetParent)
-
-    canvasX = (event.pageX - totalOffsetX) / event.currentTarget.clientWidth;
-    canvasY = (event.pageY - totalOffsetY) / event.currentTarget.clientHeight;
-
-    return {x:canvasX, y:canvasY}
-  },
-
-});
+Space.propTypes = {
+  ships: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+};
 
 export default Space;
