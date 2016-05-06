@@ -27,8 +27,8 @@ class Space extends React.Component {
 
   _onClick(event) {
     const position = this._relativeMousePosition(event);
-    console.log("New Ship", position.x, position.y);
-    SpaceActions.addObject(position);
+    const rotation = 0; // degrees
+    SpaceActions.addObject(position, rotation);
   }
 
   _relativeMousePosition(event) {
@@ -52,10 +52,14 @@ class Space extends React.Component {
   }
 
   render() {
+    console.log("Render Space:", this.props.ships);
     const ships = this.props.ships.map((ship) => {
-      return <Ship position={ship.position} key={ship.id} />;
+      return (<Ship
+        position={ship.position}
+        rotation={ship.rotation}
+        key={ship.id}
+      />);
     });
-    console.log("Render Space:", ships);
     const onClick = this._onClick.bind(this);
     return (
       <div

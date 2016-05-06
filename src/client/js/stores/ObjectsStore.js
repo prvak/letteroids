@@ -46,6 +46,7 @@ AppDispatcher.register((action) => {
     case ObjectsConstants.OBJECTS_CREATE:
       _ships.push({
         position: action.position,
+        rotation: action.rotation,
         id: _nextId++,
       });
       store.emitChange();
