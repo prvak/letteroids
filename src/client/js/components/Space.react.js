@@ -37,7 +37,6 @@ class Space extends React.Component {
     let canvasX = 0;
     let canvasY = 0;
     let currentElement = event.currentTarget;
-    console.log(currentElement);
 
     do {
       totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
@@ -52,12 +51,12 @@ class Space extends React.Component {
   }
 
   render() {
-    console.log("Render Space:", this.props.ships);
-    const ships = this.props.ships.map((ship) => {
+    const ships = Object.keys(this.props.ships).map((objectId) => {
+      const ship = this.props.ships[objectId];
       return (<Ship
         position={ship.position}
         rotation={ship.rotation}
-        key={ship.id}
+        key={objectId}
       />);
     });
     const onClick = this._onClick.bind(this);
@@ -73,7 +72,7 @@ class Space extends React.Component {
 }
 
 Space.propTypes = {
-  ships: React.PropTypes.arrayOf(React.PropTypes.object).isRequired,
+  ships: React.PropTypes.object.isRequired,
 };
 
 export default Space;

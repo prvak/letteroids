@@ -6,25 +6,16 @@ import ObjectsConstants from "../constants/ObjectsConstants";
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
-// List of all ships.
-const _ships = [
-  {
-    position: {
-      x: 0.5,
-      y: 0.5,
-    },
-    rotation: 0,
-  },
-];
+// All ships indexed by object ID.
+const _ships = {};
+
+// All objects (including ships) indexed by object ID.
+const _objects = {};
 
 // Each object has a unique ID. This is incremented each time a new object is created.
-let _nextId = 1;
+let _nextObjectId = 1;
 
 class ObjectsStore extends EventEmitter {
-  /**
-   * Get the entire collection of TODOs.
-   * @return {object}
-   */
   getShips() {
     return _ships;
   }
@@ -46,23 +37,35 @@ class ObjectsStore extends EventEmitter {
   removeChangeListener(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   }
+
+  addShip(position, rotation) {
+    const id = _nextObjectId++;
+    const ship = {
+      position,
+      rotation,
+      id,
+    };
+    _ships[id] = ship;
+    _objects[id] = ship;
+  }
+
+  rotateObject(objectId, rotationChange) {
+    _objects[objectId].rotation += rotationChange;
+  }
 }
 
 const store = new ObjectsStore();
+store.addShip({ x: 0.5, y: 0.5 }, 0);
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
   switch (action.actionType) {
     case ObjectsConstants.OBJECTS_CREATE:
-      _ships.push({
-        position: action.position,
-        rotation: action.rotation,
-        id: _nextId++,
-      });
+      store.addShip(action.position, action.rotation);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_ROTATE:
-      _ships[0].rotation += action.rotationChange;
+      store.rotateObject(action.objectId, action.rotationChange);
       store.emitChange();
       break;
     default:

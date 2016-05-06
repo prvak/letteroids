@@ -30,13 +30,14 @@ class App extends React.Component {
   }
 
   _onKeyPress(event) {
-    this.state.ships.forEach((ship) => {
+    Object.keys(this.state.ships).forEach((objectId) => {
+      const ship = this.state.ships[objectId];
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateObject(ship.id, -5);
+          SpaceActions.rotateObject(objectId, -5);
           break;
         case "ArrowRight":
-          SpaceActions.rotateObject(ship.id, 5);
+          SpaceActions.rotateObject(objectId, 5);
           break;
         default:
           break;
