@@ -56,6 +56,12 @@ class ObjectsStore extends EventEmitter {
     _objects = _objects.set(objectId, object);
     _ships = _ships.set(objectId, object);
   }
+
+  rotateAllObjects(rotationChange) {
+    _objects.forEach((object) => {
+      this.rotateObject(object.get("id"), rotationChange);
+    });
+  }
 }
 
 const store = new ObjectsStore();
@@ -68,8 +74,12 @@ AppDispatcher.register((action) => {
       store.addShip(action.position, action.rotation);
       store.emitChange();
       break;
-    case ObjectsConstants.OBJECTS_ROTATE:
+    case ObjectsConstants.OBJECTS_ROTATE_ONE:
       store.rotateObject(action.objectId, action.rotationChange);
+      store.emitChange();
+      break;
+    case ObjectsConstants.OBJECTS_ROTATE:
+      store.rotateAllObjects(action.rotationChange);
       store.emitChange();
       break;
     default:

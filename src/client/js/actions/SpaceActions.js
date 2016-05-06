@@ -11,8 +11,14 @@ const SpaceActions = {
   },
   rotateObject: (objectId, rotationChange) => {
     AppDispatcher.dispatch({
-      actionType: ObjectsConstants.OBJECTS_ROTATE,
+      actionType: ObjectsConstants.OBJECTS_ROTATE_ONE,
       objectId,
+      rotationChange,
+    });
+  },
+  rotateAllObjects: (rotationChange) => {
+    AppDispatcher.dispatch({
+      actionType: ObjectsConstants.OBJECTS_ROTATE,
       rotationChange,
     });
   },
