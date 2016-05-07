@@ -27,8 +27,8 @@ class Space extends React.Component {
 
   _onClick(event) {
     const position = this._relativeMousePosition(event);
-    const rotation = 0; // degrees
-    SpaceActions.addObject(position, rotation);
+    position.r = 0; // degrees
+    SpaceActions.addAsteroid(position);
   }
 
   _relativeMousePosition(event) {
@@ -55,7 +55,7 @@ class Space extends React.Component {
     this.props.ships.forEach((ship) => {
       ships.push(<Ship
         position={ship.get("position")}
-        rotation={ship.get("rotation")}
+        hull={ship.get("hull")}
         key={ship.get("id")}
       />);
     });

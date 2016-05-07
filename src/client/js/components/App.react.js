@@ -13,37 +13,39 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = getAppState();
+    this._onChange = () => {
+      this.setState(getAppState());
+    };
+    this._onKeyPress = (event) => {
+      const shipId = 1;
+      switch (event.code) {
+        case "ArrowLeft":
+          SpaceActions.rotateShip(shipId, -0.05);
+          break;
+        case "ArrowRight":
+          SpaceActions.rotateShip(shipId, 0.05);
+          break;
+        case "Space":
+          SpaceActions.nextTick();
+          break;
+        default:
+          break;
+      }
+    };
   }
 
   componentDidMount() {
-    objectsStore.addChangeListener(this._onChange.bind(this));
-    document.addEventListener("keydown", this._onKeyPress.bind(this));
+    objectsStore.addChangeListener(this._onChange);
+    document.addEventListener("keydown", this._onKeyPress);
   }
 
   componentWillUnmount() {
-    objectsStore.removeChangeListener(this._onChange.bind(this));
-    document.removeEventListener("keydown", this._onKeyPress.bind(this));
-  }
-
-  _onChange() {
-    this.setState(getAppState());
-  }
-
-  _onKeyPress(event) {
-    switch (event.code) {
-      case "ArrowLeft":
-        SpaceActions.rotateAllObjects(-5);
-        break;
-      case "ArrowRight":
-        SpaceActions.rotateAllObjects(5);
-        break;
-      default:
-        break;
-    }
+    objectsStore.removeChangeListener(this._onChange);
+    document.removeEventListener("keydown", this._onKeyPress);
   }
 
   render() {
-    const onKeyPress = this._onKeyPress.bind();
+    const onKeyPress = this._onKeyPress;
     return (
       <div id="app"
         onKeyPress={onKeyPress}

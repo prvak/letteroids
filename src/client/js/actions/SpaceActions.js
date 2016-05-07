@@ -2,24 +2,23 @@ import AppDispatcher from "../dispatcher/AppDispatcher";
 import ObjectsConstants from "../constants/ObjectsConstants";
 
 const SpaceActions = {
-  addObject: (position, rotation) => {
+  addAsteroid: (position, speed) => {
     AppDispatcher.dispatch({
-      actionType: ObjectsConstants.OBJECTS_CREATE,
+      actionType: ObjectsConstants.OBJECTS_ADD_ASTEROID,
       position,
-      rotation,
+      speed,
     });
   },
-  rotateObject: (objectId, rotationChange) => {
+  rotateShip: (objectId, rotationChange) => {
     AppDispatcher.dispatch({
-      actionType: ObjectsConstants.OBJECTS_ROTATE_ONE,
+      actionType: ObjectsConstants.OBJECTS_ROTATE_SHIP,
       objectId,
       rotationChange,
     });
   },
-  rotateAllObjects: (rotationChange) => {
+  nextTick: () => {
     AppDispatcher.dispatch({
-      actionType: ObjectsConstants.OBJECTS_ROTATE,
-      rotationChange,
+      actionType: ObjectsConstants.OBJECTS_TICK,
     });
   },
 };
