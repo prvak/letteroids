@@ -32,16 +32,21 @@ class App extends React.Component {
           break;
       }
     };
+    this._onTick = () => {
+      SpaceActions.nextTick();
+    };
   }
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
     document.addEventListener("keydown", this._onKeyPress);
+    setInterval(this._onTick, 1000/30);
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
     document.removeEventListener("keydown", this._onKeyPress);
+    clearTimeout(this._onTick);
   }
 
   render() {
