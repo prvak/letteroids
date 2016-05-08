@@ -52,8 +52,8 @@ class ObjectsStore extends EventEmitter {
   _addObject(id, position, hull) {
     const speed = {
       x: 0.01,
-      y: 0.01,
-      r: 0.1,
+      y: 0.0,
+      r: 0.0,
     };
     const acceleration = {
       x: 0.0,
@@ -73,36 +73,78 @@ class ObjectsStore extends EventEmitter {
     _objects = _objects.set(id, object);
   }
 
-  rotateObject(objectId, rotationChange) {
-    const object = _objects.get(objectId);
-    const positionChange = {
-      x: 0,
-      y: 0,
-      r: rotationChange,
-    };
-    const newObject = this._changePosition(object, positionChange);
-    _objects = _objects.set(objectId, newObject);
+  rotateObject(objectId, rotationSpeed) {
+    let object = _objects.get(objectId);
+    const now = this._getTimestamp();
+    const currentSpeed = this._computeCurrentSpeed(object, now);
+    currentSpeed.r = rotationSpeed;
+    const currentPosition = this._computeCurrentPosition(object, now);
+    object = object.set("initialPosition", new Immutable.Map(currentPosition));
+    object = object.set("position", new Immutable.Map(currentPosition));
+    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
+    object = object.set("speed", new Immutable.Map(currentSpeed));
+    object = object.set("ts", now);
+    _objects = _objects.set(objectId, object);
   }
 
   handleTick() {
     const now = this._getTimestamp();
-    if (_lastTickTimestamp !== null) {
-      const timeSinceLastTick = now - _lastTickTimestamp;
-      const newObjects = {};
+    const newObjects = {};
+    if (_lastTickTimestamp === null) {
       _objects.forEach((object) => {
         const objectId = object.get("id");
-        const speed = object.get("speed");
-        const positionChange = {};
-        ["x", "y", "r"].forEach((dimension) => {
-          const movement = speed.get(dimension) * timeSinceLastTick / 1000;
-          positionChange[dimension] = movement;
-        });
-        const newObject = this._changePosition(object, positionChange);
-        newObjects[objectId] = newObject;
+        newObjects[objectId] = this._updateTimestamp(object, now);
       });
-      _objects = new Immutable.Map(newObjects);
+    } else {
+      _objects.forEach((object) => {
+        const objectId = object.get("id");
+        const currentPosition = this._computeCurrentPosition(object, now);
+        newObjects[objectId] = object.set("position", new Immutable.Map(currentPosition));
+      });
     }
+    _objects = new Immutable.Map(newObjects);
     _lastTickTimestamp = now;
+  }
+
+  _computeCurrentPosition(object, now) {
+    const ts = object.get("ts");
+    const t = (now - ts) / 1000;
+    const initialSpeed = object.get("initialSpeed");
+    const initialPosition = object.get("initialPosition");
+    const acceleration = object.get("acceleration");
+    const currentPosition = {};
+    ["x", "y", "r"].forEach((dimension) => {
+      const p = initialPosition.get(dimension);
+      const v = initialSpeed.get(dimension);
+      const a = acceleration.get(dimension);
+      // Compute distance traveled by a constantly accelerated object.
+      // s = a*(t^2)/2 + v*t
+      const s = a * t * t / 2 + v * t;
+      // Normalize to interval [0:1].
+      currentPosition[dimension] = (p + s) % 1.0;
+    });
+    return currentPosition;
+  }
+
+  _computeCurrentSpeed(object, now) {
+    const ts = object.get("ts");
+    const t = (now - ts) / 1000;
+    const initialSpeed = object.get("initialSpeed");
+    const acceleration = object.get("acceleration");
+    const currentSpeed = {};
+    ["x", "y", "r"].forEach((dimension) => {
+      const v = initialSpeed.get(dimension);
+      const a = acceleration.get(dimension);
+      // Compute speed of a constantly accelerated object.
+      // u = a*t
+      const u = a * t;
+      currentSpeed[dimension] = v + u;
+    });
+    return currentSpeed;
+  }
+
+  _updateTimestamp(object, now) {
+    return object.set("timestamp", now);
   }
 
   _changePosition(object, positionChange) {

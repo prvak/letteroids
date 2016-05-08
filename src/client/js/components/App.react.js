@@ -16,17 +16,33 @@ class App extends React.Component {
     this._onChange = () => {
       this.setState(getAppState());
     };
-    this._onKeyPress = (event) => {
+    this._onKeyDown = (event) => {
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(shipId, -0.05);
+          SpaceActions.rotateShip(shipId, -0.3);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(shipId, 0.05);
+          SpaceActions.rotateShip(shipId, 0.3);
           break;
-        case "Space":
-          SpaceActions.nextTick();
+        case "ArrowUp":
+          SpaceActions.accelerateShip(shipId, 0.05);
+          break;
+        default:
+          break;
+      }
+    };
+    this._onKeyUp = (event) => {
+      const shipId = 1;
+      switch (event.code) {
+        case "ArrowLeft":
+          SpaceActions.rotateShip(shipId, 0);
+          break;
+        case "ArrowRight":
+          SpaceActions.rotateShip(shipId, 0);
+          break;
+        case "ArrowUp":
+          SpaceActions.accelerateShip(shipId, 0.05);
           break;
         default:
           break;
@@ -39,13 +55,15 @@ class App extends React.Component {
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
-    document.addEventListener("keydown", this._onKeyPress);
+    document.addEventListener("keydown", this._onKeyDown);
+    document.addEventListener("keyup", this._onKeyUp);
     setInterval(this._onTick, 1000/30);
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-    document.removeEventListener("keydown", this._onKeyPress);
+    document.removeEventListener("keydown", this._onKeyDown);
+    document.removeEventListener("keyup", this._onKeyUp);
     clearTimeout(this._onTick);
   }
 
