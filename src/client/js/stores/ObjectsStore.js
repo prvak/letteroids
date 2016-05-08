@@ -38,41 +38,39 @@ class ObjectsStore extends EventEmitter {
     this.removeListener(CHANGE_EVENT, callback);
   }
 
-  _generateId() {
-    return
-  }
-
   addShip(position) {
     const id = `ship_${_nextObjectId++}`;
-    const speed = {
-      x: 0.01, // screens/second
-      y: 0.01, // screens/second
-      r: 0.1, // degrees/second
-    };
-    const ship = new Immutable.Map({
-      position: new Immutable.Map(position),
-      speed: new Immutable.Map(speed),
-      id,
-      hull: "V",
-    });
-    _objects = _objects.set(id, ship);
+    this._addObject(id, position, "V");
     _shipId = id;
   }
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
+    this._addObject(id, position, "@");
+  }
+
+  _addObject(id, position, hull) {
     const speed = {
-      x: 0.01, // screens/second
-      y: 0.01, // screens/second
-      r: 0.1, // cycles/second
+      x: 0.01,
+      y: 0.01,
+      r: 0.1,
     };
-    const asteroid = new Immutable.Map({
-      position: new Immutable.Map(position),
-      speed: new Immutable.Map(speed),
+    const acceleration = {
+      x: 0.0,
+      y: 0.0,
+      r: 0.0,
+    };
+    const object = Immutable.fromJS({
       id,
-      hull: "@",
+      ts: this._getTimestamp(),
+      initialPosition: position,
+      initialSpeed: speed,
+      speed,
+      acceleration,
+      position,
+      hull,
     });
-    _objects = _objects.set(id, asteroid);
+    _objects = _objects.set(id, object);
   }
 
   rotateObject(objectId, rotationChange) {
@@ -87,7 +85,7 @@ class ObjectsStore extends EventEmitter {
   }
 
   handleTick() {
-    const now = Date.now();
+    const now = this._getTimestamp();
     if (_lastTickTimestamp !== null) {
       const timeSinceLastTick = now - _lastTickTimestamp;
       const newObjects = {};
@@ -116,6 +114,10 @@ class ObjectsStore extends EventEmitter {
       newPosition[dimension] = newValue;
     });
     return object.set("position", new Immutable.Map(newPosition));
+  }
+
+  _getTimestamp() {
+    return Date.now();
   }
 }
 
