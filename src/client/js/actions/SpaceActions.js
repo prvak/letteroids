@@ -23,10 +23,11 @@ const SpaceActions = {
       force,
     });
   },
-  shoot: (force) => {
+  shoot: (force, ttl) => {
     AppDispatcher.dispatch({
       actionType: ObjectsConstants.OBJECTS_SHOOT,
       force,
+      ttl,
     });
   },
   nextTick: () => {

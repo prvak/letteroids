@@ -64,7 +64,7 @@ class App extends React.Component {
       SpaceActions.nextTick();
     };
     this._onShoot = () => {
-      SpaceActions.shoot(0.3);
+      SpaceActions.shoot(0.3, 3000);
     };
   }
 

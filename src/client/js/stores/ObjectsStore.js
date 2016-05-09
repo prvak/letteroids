@@ -41,23 +41,25 @@ class ObjectsStore extends EventEmitter {
   addShip(position) {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
-    this._addObject(id, position, speed, "V");
+    this._addObject(id, position, speed, 0, "V");
     _shipId = id;
   }
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
-    this._addObject(id, position, speed, "@");
+    this._addObject(id, position, speed, 0, "@");
   }
 
-  addShot(position, speed) {
+  addShot(position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
-    this._addObject(id, position, speed, "x");
+    this._addObject(id, position, speed, ttl, "x");
   }
 
-  _addObject(id, position, speed, hull) {
+  _addObject(id, position, speed, ttl, hull) {
     const acceleration = { x: 0, y: 0, r: 0 };
+    console.log(ttl);
+    const expiresAt = ttl ? this._getTimestamp() + ttl : 0;
     const object = Immutable.fromJS({
       id,
       ts: this._getTimestamp(),
@@ -66,6 +68,7 @@ class ObjectsStore extends EventEmitter {
       position,
       speed,
       acceleration,
+      expiresAt,
       hull,
     });
     _objects = _objects.set(id, object);
@@ -105,7 +108,7 @@ class ObjectsStore extends EventEmitter {
     _objects = _objects.set(objectId, object);
   }
 
-  shoot(objectId, force) {
+  shoot(objectId, force, ttl) {
     let object = _objects.get(objectId);
     // Update position.
     const now = this._getTimestamp();
@@ -125,7 +128,7 @@ class ObjectsStore extends EventEmitter {
       y: -force * Math.cos(angle) + currentSpeed.y,
       r: 0.0,
     };
-    this.addShot(currentPosition, shotSpeed);
+    this.addShot(currentPosition, shotSpeed, ttl);
   }
 
   handleTick() {
@@ -139,8 +142,11 @@ class ObjectsStore extends EventEmitter {
     } else {
       _objects.forEach((object) => {
         const objectId = object.get("id");
-        const currentPosition = this._computeCurrentPosition(object, now);
-        newObjects[objectId] = object.set("position", new Immutable.Map(currentPosition));
+        const expires = object.get("expiresAt");
+        if (!expires || expires > now) {
+          const currentPosition = this._computeCurrentPosition(object, now);
+          newObjects[objectId] = object.set("position", new Immutable.Map(currentPosition));
+        }
       });
     }
     _objects = new Immutable.Map(newObjects);
@@ -227,7 +233,7 @@ AppDispatcher.register((action) => {
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_SHOOT:
-      store.shoot(_shipId, action.force);
+      store.shoot(_shipId, action.force, action.ttl);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_TICK:
