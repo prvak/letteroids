@@ -140,8 +140,12 @@ class ObjectsStore extends EventEmitter {
       // Compute distance traveled by a constantly accelerated object.
       // s = a*(t^2)/2 + v*t
       const s = a * t * t / 2 + v * t;
-      // Normalize to interval [0:1].
-      currentPosition[dimension] = (p + s) % 1.0;
+      // Normalize to interval [0:1).
+      let newP = (p + s) % 1.0;
+      if (newP < 0) {
+        newP += 1.0;
+      }
+      currentPosition[dimension] = newP;
     });
     return currentPosition;
   }
