@@ -40,34 +40,32 @@ class ObjectsStore extends EventEmitter {
 
   addShip(position) {
     const id = `ship_${_nextObjectId++}`;
-    this._addObject(id, position, "V");
+    const speed = { x: 0, y: 0, r: 0 };
+    this._addObject(id, position, speed, "V");
     _shipId = id;
   }
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
-    this._addObject(id, position, "@");
+    const speed = { x: 0, y: 0, r: 0 };
+    this._addObject(id, position, speed, "@");
   }
 
-  _addObject(id, position, hull) {
-    const speed = {
-      x: 0.01,
-      y: 0.0,
-      r: 0.0,
-    };
-    const acceleration = {
-      x: 0.0,
-      y: 0.0,
-      r: 0.0,
-    };
+  addShot(position, speed) {
+    const id = `shot_${_nextObjectId++}`;
+    this._addObject(id, position, speed, "x");
+  }
+
+  _addObject(id, position, speed, hull) {
+    const acceleration = { x: 0, y: 0, r: 0 };
     const object = Immutable.fromJS({
       id,
       ts: this._getTimestamp(),
       initialPosition: position,
       initialSpeed: speed,
+      position,
       speed,
       acceleration,
-      position,
       hull,
     });
     _objects = _objects.set(id, object);
@@ -105,6 +103,29 @@ class ObjectsStore extends EventEmitter {
     object = object.set("ts", now);
     object = object.set("acceleration", new Immutable.Map(acceleration));
     _objects = _objects.set(objectId, object);
+  }
+
+  shoot(objectId, force) {
+    let object = _objects.get(objectId);
+    // Update position.
+    const now = this._getTimestamp();
+    const currentSpeed = this._computeCurrentSpeed(object, now);
+    const currentPosition = this._computeCurrentPosition(object, now);
+    object = object.set("initialPosition", new Immutable.Map(currentPosition));
+    object = object.set("position", new Immutable.Map(currentPosition));
+    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
+    object = object.set("speed", new Immutable.Map(currentSpeed));
+    object = object.set("ts", now);
+    _objects = _objects.set(objectId, object);
+
+    // Shoot.
+    const angle = currentPosition.r * 2 * Math.PI;
+    const shotSpeed = {
+      x: force * Math.sin(angle) + currentSpeed.x,
+      y: -force * Math.cos(angle) + currentSpeed.y,
+      r: 0.0,
+    };
+    this.addShot(currentPosition, shotSpeed);
   }
 
   handleTick() {
@@ -203,6 +224,10 @@ AppDispatcher.register((action) => {
       break;
     case ObjectsConstants.OBJECTS_ACCELERATE_SHIP:
       store.accelerateObject(_shipId, action.force);
+      store.emitChange();
+      break;
+    case ObjectsConstants.OBJECTS_SHOOT:
+      store.shoot(_shipId, action.force);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_TICK:

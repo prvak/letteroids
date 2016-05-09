@@ -28,6 +28,12 @@ class App extends React.Component {
         case "ArrowUp":
           SpaceActions.accelerateShip(shipId, 0.3);
           break;
+        case "Space":
+          if (!this._shootTimer) {
+            this._onShoot();
+            this._shootTimer = setInterval(this._onShoot, 500);
+          }
+          break;
         default:
           break;
       }
@@ -44,6 +50,12 @@ class App extends React.Component {
         case "ArrowUp":
           SpaceActions.accelerateShip(shipId, 0);
           break;
+        case "Space":
+          if (this._shootTimer) {
+            clearInterval(this._shootTimer);
+            this._shootTimer = null;
+          }
+          break;
         default:
           break;
       }
@@ -51,20 +63,25 @@ class App extends React.Component {
     this._onTick = () => {
       SpaceActions.nextTick();
     };
+    this._onShoot = () => {
+      SpaceActions.shoot(0.3);
+    };
   }
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
-    setInterval(this._onTick, 1000 / 30);
+    this._tickTimer = setInterval(this._onTick, 1000 / 30);
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
     document.removeEventListener("keydown", this._onKeyDown);
     document.removeEventListener("keyup", this._onKeyUp);
-    clearTimeout(this._onTick);
+    if (this._tickTimer) {
+      clearInterval(this._tickTimer);
+    }
   }
 
   render() {
