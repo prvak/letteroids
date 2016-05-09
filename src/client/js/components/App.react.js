@@ -20,13 +20,13 @@ class App extends React.Component {
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(shipId, -0.3);
+          SpaceActions.rotateShip(shipId, -0.6);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(shipId, 0.3);
+          SpaceActions.rotateShip(shipId, 0.6);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(shipId, 0.05);
+          SpaceActions.accelerateShip(shipId, 0.3);
           break;
         default:
           break;
