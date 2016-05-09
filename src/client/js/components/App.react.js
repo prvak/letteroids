@@ -6,6 +6,8 @@ import SpaceActions from "../actions/SpaceActions";
 function getAppState() {
   return {
     ships: objectsStore.getShips(),
+    shots: objectsStore.getShots(),
+    asteroids: objectsStore.getAsteroids(),
   };
 }
 
@@ -87,7 +89,11 @@ class App extends React.Component {
   render() {
     return (
       <div id="app">
-        <Space ships={this.state.ships} />
+        <Space
+          ships={this.state.ships}
+          shots={this.state.shots}
+          asteroids={this.state.asteroids}
+        />
       </div>
     );
   }

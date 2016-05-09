@@ -9,6 +9,12 @@ class Space extends React.Component {
     this.state = {
       ships: objectsStore.getShips(),
     };
+
+    this._onClick = (event) => {
+      const position = this._relativeMousePosition(event);
+      position.r = 0; // degrees
+      SpaceActions.addAsteroid(position);
+    };
   }
 
   componentDidMount() {
@@ -23,12 +29,6 @@ class Space extends React.Component {
     return {
       ships: objectsStore.getShips(),
     };
-  }
-
-  _onClick(event) {
-    const position = this._relativeMousePosition(event);
-    position.r = 0; // degrees
-    SpaceActions.addAsteroid(position);
   }
 
   _relativeMousePosition(event) {
@@ -50,22 +50,31 @@ class Space extends React.Component {
     return { x: canvasX, y: canvasY };
   }
 
+  _renderObject(object) {
+    return (<Ship
+      position={object.get("position")}
+      hull={object.get("hull")}
+      key={object.get("id")}
+    />);
+  }
+
   render() {
-    const ships = [];
-    this.props.ships.forEach((ship) => {
-      ships.push(<Ship
-        position={ship.get("position")}
-        hull={ship.get("hull")}
-        key={ship.get("id")}
-      />);
+    const objects = [];
+    this.props.ships.forEach((object) => {
+      objects.push(this._renderObject(object));
     });
-    const onClick = this._onClick.bind(this);
+    this.props.shots.forEach((object) => {
+      objects.push(this._renderObject(object));
+    });
+    this.props.asteroids.forEach((object) => {
+      objects.push(this._renderObject(object));
+    });
     return (
       <div
         className="space"
-        onClick={onClick}
+        onClick={this._onClick}
       >
-        {ships}
+        {objects}
       </div>
     );
   }
@@ -73,6 +82,8 @@ class Space extends React.Component {
 
 Space.propTypes = {
   ships: React.PropTypes.object.isRequired,
+  shots: React.PropTypes.object.isRequired,
+  asteroids: React.PropTypes.object.isRequired,
 };
 
 export default Space;

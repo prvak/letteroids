@@ -8,7 +8,9 @@ const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 
 // All objects indexed by object ID.
-let _objects = new Immutable.Map({});
+let _ships = new Immutable.Map({});
+let _shots = new Immutable.Map({});
+let _asteroids = new Immutable.Map({});
 
 // Each object has a unique ID. This is incremented each time a new object is created.
 let _nextObjectId = 1;
@@ -17,7 +19,15 @@ let _shipId = null;
 
 class ObjectsStore extends EventEmitter {
   getShips() {
-    return _objects;
+    return _ships;
+  }
+
+  getShots() {
+    return _shots;
+  }
+
+  getAsteroids() {
+    return _asteroids;
   }
 
   emitChange() {
@@ -41,24 +51,26 @@ class ObjectsStore extends EventEmitter {
   addShip(position) {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
-    this._addObject(id, position, speed, 0, "V");
+    const object = this._createObject(id, position, speed, 0, "V");
+    _ships = _ships.set(id, object);
     _shipId = id;
   }
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
-    this._addObject(id, position, speed, 0, "@");
+    const object = this._createObject(id, position, speed, 0, "@");
+    _asteroids = _asteroids.set(id, object);
   }
 
   addShot(position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
-    this._addObject(id, position, speed, ttl, "x");
+    const object = this._createObject(id, position, speed, ttl, "x");
+    _shots = _shots.set(id, object);
   }
 
-  _addObject(id, position, speed, ttl, hull) {
+  _createObject(id, position, speed, ttl, hull) {
     const acceleration = { x: 0, y: 0, r: 0 };
-    console.log(ttl);
     const expiresAt = ttl ? this._getTimestamp() + ttl : 0;
     const object = Immutable.fromJS({
       id,
@@ -71,11 +83,11 @@ class ObjectsStore extends EventEmitter {
       expiresAt,
       hull,
     });
-    _objects = _objects.set(id, object);
+    return object;
   }
 
-  rotateObject(objectId, rotationSpeed) {
-    let object = _objects.get(objectId);
+  rotateShip(shipId, rotationSpeed) {
+    let object = _ships.get(shipId);
     const now = this._getTimestamp();
     const currentSpeed = this._computeCurrentSpeed(object, now);
     currentSpeed.r = rotationSpeed;
@@ -85,11 +97,11 @@ class ObjectsStore extends EventEmitter {
     object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
     object = object.set("speed", new Immutable.Map(currentSpeed));
     object = object.set("ts", now);
-    _objects = _objects.set(objectId, object);
+    _ships = _ships.set(shipId, object);
   }
 
-  accelerateObject(objectId, force) {
-    let object = _objects.get(objectId);
+  accelerateShip(shipId, force) {
+    let object = _ships.get(shipId);
     const now = this._getTimestamp();
     const currentSpeed = this._computeCurrentSpeed(object, now);
     const currentPosition = this._computeCurrentPosition(object, now);
@@ -105,11 +117,11 @@ class ObjectsStore extends EventEmitter {
     object = object.set("speed", new Immutable.Map(currentSpeed));
     object = object.set("ts", now);
     object = object.set("acceleration", new Immutable.Map(acceleration));
-    _objects = _objects.set(objectId, object);
+    _ships = _ships.set(shipId, object);
   }
 
-  shoot(objectId, force, ttl) {
-    let object = _objects.get(objectId);
+  shoot(shipId, force, ttl) {
+    let object = _ships.get(shipId);
     // Update position.
     const now = this._getTimestamp();
     const currentSpeed = this._computeCurrentSpeed(object, now);
@@ -119,7 +131,7 @@ class ObjectsStore extends EventEmitter {
     object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
     object = object.set("speed", new Immutable.Map(currentSpeed));
     object = object.set("ts", now);
-    _objects = _objects.set(objectId, object);
+    _ships = _ships.set(shipId, object);
 
     // Shoot.
     const angle = currentPosition.r * 2 * Math.PI;
@@ -133,23 +145,38 @@ class ObjectsStore extends EventEmitter {
 
   handleTick() {
     const now = this._getTimestamp();
-    const newObjects = {};
     if (_lastTickTimestamp === null) {
-      _objects.forEach((object) => {
-        const objectId = object.get("id");
-        newObjects[objectId] = this._updateTimestamp(object, now);
-      });
+      const update = (objects) => {
+        let newObjects = objects;
+        objects.forEach((object) => {
+          const objectId = object.get("id");
+          newObjects = objects.set(objectId, this._updateTimestamp(object, now));
+        });
+        return newObjects;
+      };
+      _ships = update(_ships);
+      _asteroids = update(_asteroids);
+      _shots = update(_shots);
     } else {
-      _objects.forEach((object) => {
-        const objectId = object.get("id");
-        const expires = object.get("expiresAt");
-        if (!expires || expires > now) {
-          const currentPosition = this._computeCurrentPosition(object, now);
-          newObjects[objectId] = object.set("position", new Immutable.Map(currentPosition));
-        }
-      });
+      const update = (objects) => {
+        let newObjects = objects;
+        objects.forEach((object) => {
+          const objectId = object.get("id");
+          const expires = object.get("expiresAt");
+          if (expires && expires < now) {
+            const currentPosition = this._computeCurrentPosition(object, now);
+            newObjects = objects.set(objectId, object.set("position", new Immutable.Map(currentPosition)));
+          } else {
+            newObjects = objects.delete(objectId);
+          }
+        });
+        return newObjects;
+      };
+      _ships = update(_ships);
+      console.log(_ships);
+      _asteroids = update(_asteroids);
+      _shots = update(_shots);
     }
-    _objects = new Immutable.Map(newObjects);
     _lastTickTimestamp = now;
   }
 
@@ -225,11 +252,11 @@ AppDispatcher.register((action) => {
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_ROTATE_SHIP:
-      store.rotateObject(_shipId, action.rotationChange);
+      store.rotateShip(_shipId, action.rotationChange);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_ACCELERATE_SHIP:
-      store.accelerateObject(_shipId, action.force);
+      store.accelerateShip(_shipId, action.force);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_SHOOT:
