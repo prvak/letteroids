@@ -55,26 +55,21 @@ class App extends React.Component {
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
-    //document.addEventListener("keydown", this._onKeyDown);
-    //document.addEventListener("keyup", this._onKeyUp);
-    setInterval(this._onTick, 1000/30);
+    document.addEventListener("keydown", this._onKeyDown);
+    document.addEventListener("keyup", this._onKeyUp);
+    setInterval(this._onTick, 1000 / 30);
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-    //document.removeEventListener("keydown", this._onKeyDown);
-    //document.removeEventListener("keyup", this._onKeyUp);
+    document.removeEventListener("keydown", this._onKeyDown);
+    document.removeEventListener("keyup", this._onKeyUp);
     clearTimeout(this._onTick);
   }
 
   render() {
-    const onKeyPress = this._onKeyPress;
     return (
-      <div id="app"
-        tabIndex="0"
-        onKeyDown={this._onKeyDown}
-        onKeyUp={this._onKeyUp}
-      >
+      <div id="app">
         <Space ships={this.state.ships} />
       </div>
     );

@@ -97,8 +97,7 @@ class ObjectsStore extends EventEmitter {
       x: force * Math.sin(angle),
       y: -force * Math.cos(angle),
       r: 0.0,
-    }
-    console.log(force, angle, acceleration);
+    };
     object = object.set("initialPosition", new Immutable.Map(currentPosition));
     object = object.set("position", new Immutable.Map(currentPosition));
     object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
