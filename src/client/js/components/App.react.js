@@ -42,7 +42,7 @@ class App extends React.Component {
           SpaceActions.rotateShip(shipId, 0);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(shipId, 0.05);
+          SpaceActions.accelerateShip(shipId, 0);
           break;
         default:
           break;
@@ -55,15 +55,15 @@ class App extends React.Component {
 
   componentDidMount() {
     objectsStore.addChangeListener(this._onChange);
-    document.addEventListener("keydown", this._onKeyDown);
-    document.addEventListener("keyup", this._onKeyUp);
+    //document.addEventListener("keydown", this._onKeyDown);
+    //document.addEventListener("keyup", this._onKeyUp);
     setInterval(this._onTick, 1000/30);
   }
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-    document.removeEventListener("keydown", this._onKeyDown);
-    document.removeEventListener("keyup", this._onKeyUp);
+    //document.removeEventListener("keydown", this._onKeyDown);
+    //document.removeEventListener("keyup", this._onKeyUp);
     clearTimeout(this._onTick);
   }
 
@@ -71,7 +71,9 @@ class App extends React.Component {
     const onKeyPress = this._onKeyPress;
     return (
       <div id="app"
-        onKeyPress={onKeyPress}
+        tabIndex="0"
+        onKeyDown={this._onKeyDown}
+        onKeyUp={this._onKeyUp}
       >
         <Space ships={this.state.ships} />
       </div>

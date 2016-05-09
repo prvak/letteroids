@@ -16,6 +16,13 @@ const SpaceActions = {
       rotationChange,
     });
   },
+  accelerateShip: (objectId, force) => {
+    AppDispatcher.dispatch({
+      actionType: ObjectsConstants.OBJECTS_ACCELERATE_SHIP,
+      objectId,
+      force,
+    });
+  },
   nextTick: () => {
     AppDispatcher.dispatch({
       actionType: ObjectsConstants.OBJECTS_TICK,

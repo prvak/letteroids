@@ -87,6 +87,27 @@ class ObjectsStore extends EventEmitter {
     _objects = _objects.set(objectId, object);
   }
 
+  accelerateObject(objectId, force) {
+    let object = _objects.get(objectId);
+    const now = this._getTimestamp();
+    const currentSpeed = this._computeCurrentSpeed(object, now);
+    const currentPosition = this._computeCurrentPosition(object, now);
+    const angle = currentPosition.r * 2 * Math.PI;
+    const acceleration = {
+      x: force * Math.sin(angle),
+      y: -force * Math.cos(angle),
+      r: 0.0,
+    }
+    console.log(force, angle, acceleration);
+    object = object.set("initialPosition", new Immutable.Map(currentPosition));
+    object = object.set("position", new Immutable.Map(currentPosition));
+    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
+    object = object.set("speed", new Immutable.Map(currentSpeed));
+    object = object.set("ts", now);
+    object = object.set("acceleration", new Immutable.Map(acceleration));
+    _objects = _objects.set(objectId, object);
+  }
+
   handleTick() {
     const now = this._getTimestamp();
     const newObjects = {};
@@ -175,6 +196,10 @@ AppDispatcher.register((action) => {
       break;
     case ObjectsConstants.OBJECTS_ROTATE_SHIP:
       store.rotateObject(_shipId, action.rotationChange);
+      store.emitChange();
+      break;
+    case ObjectsConstants.OBJECTS_ACCELERATE_SHIP:
+      store.accelerateObject(_shipId, action.force);
       store.emitChange();
       break;
     case ObjectsConstants.OBJECTS_TICK:
