@@ -18,7 +18,8 @@ class Ship extends React.Component {
 
   render() {
     const size = this.state.isSelected ? 30 : 20; // px
-    const rotation = (this.props.position.get("r") * 360 + 180) % 360; // degrees
+    const rotation = (this.props.position.get("r") * 360) % 360; // degrees
+    const hull = this.props.hull.get("parts").get(0).get("symbol");
     const style = {
       left: `${this.props.position.get("x") * 100}%`,
       top: `${this.props.position.get("y") * 100}%`,
@@ -36,7 +37,7 @@ class Ship extends React.Component {
         style={style}
         onClick={onClick}
       >
-        {this.props.hull}
+        {hull}
       </span>
     );
   }
@@ -44,7 +45,7 @@ class Ship extends React.Component {
 
 Ship.propTypes = {
   position: React.PropTypes.object.isRequired,
-  hull: React.PropTypes.string.isRequired,
+  hull: React.PropTypes.object.isRequired,
 };
 
 export default Ship;
