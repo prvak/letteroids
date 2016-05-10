@@ -145,38 +145,33 @@ class ObjectsStore extends EventEmitter {
 
   handleTick() {
     const now = this._getTimestamp();
+    let update = null;
     if (_lastTickTimestamp === null) {
-      const update = (objects) => {
-        let newObjects = objects;
+      update = (objects) => {
+        console.log(objects.size);
         objects.forEach((object) => {
           const objectId = object.get("id");
-          newObjects = objects.set(objectId, this._updateTimestamp(object, now));
+          objects.set(objectId, this._updateTimestamp(object, now));
         });
-        return newObjects;
+        console.log(objects.size);
       };
-      _ships = update(_ships);
-      _asteroids = update(_asteroids);
-      _shots = update(_shots);
     } else {
-      const update = (objects) => {
-        let newObjects = objects;
+      update = (objects) => {
         objects.forEach((object) => {
           const objectId = object.get("id");
           const expires = object.get("expiresAt");
           if (expires && expires < now) {
-            const currentPosition = this._computeCurrentPosition(object, now);
-            newObjects = objects.set(objectId, object.set("position", new Immutable.Map(currentPosition)));
+            objects.delete(objectId);
           } else {
-            newObjects = objects.delete(objectId);
+            const currentPosition = this._computeCurrentPosition(object, now);
+            objects.set(objectId, object.set("position", new Immutable.Map(currentPosition)));
           }
         });
-        return newObjects;
       };
-      _ships = update(_ships);
-      console.log(_ships);
-      _asteroids = update(_asteroids);
-      _shots = update(_shots);
     }
+    _ships = _ships.withMutations(update);
+    _asteroids = _asteroids.withMutations(update);
+    _shots = _shots.withMutations(update);
     _lastTickTimestamp = now;
   }
 
