@@ -52,7 +52,15 @@ class ObjectsStore extends EventEmitter {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
     const hull = {
-      parts: [ { symbol: "V", r: 0.5, size: 0.05, radius: 0.025 } ],
+      size: 1,
+      components: [
+        {
+          symbol: "V",
+          position: { x: 0.5, y: 0.5, r: 0.5 },
+          size: 1.0,
+          radius: 1.0
+        },
+      ],
     }
     const object = this._createObject(id, position, speed, 0, hull);
     _ships = _ships.set(id, object);
@@ -63,7 +71,15 @@ class ObjectsStore extends EventEmitter {
     const id = `asteroid_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
     const hull = {
-      parts: [ { symbol: "@", r: 0.5, size: 0.05, radius: 0.025 } ],
+      size: 1.5,
+      components: [
+        {
+          symbol: "@",
+          position: { x: 0.5, y: 0.5, r: 0.5 },
+          size: 1.5,
+          radius: 1.0
+        },
+      ],
     }
     const object = this._createObject(id, position, speed, 0, hull);
     _asteroids = _asteroids.set(id, object);
@@ -72,7 +88,15 @@ class ObjectsStore extends EventEmitter {
   addShot(position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
     const hull = {
-      parts: [ { symbol: "x", r: 0.5, size: 0.05, radius: 0.025 } ],
+      size: 0.3,
+      components: [
+        {
+          symbol: "x",
+          position: { x: 0.5, y: 0.5, r: 0.5 },
+          size: 0.3,
+          radius: 1.0,
+        },
+      ],
     }
     const object = this._createObject(id, position, speed, ttl, hull);
     _shots = _shots.set(id, object);

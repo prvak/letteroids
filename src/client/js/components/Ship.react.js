@@ -1,5 +1,7 @@
 import React from "react";
 
+import Hull from "./Hull.react"
+
 class Ship extends React.Component {
   constructor() {
     super();
@@ -17,18 +19,15 @@ class Ship extends React.Component {
   }
 
   render() {
-    const size = this.state.isSelected ? 30 : 20; // px
+    const size = this.props.hull.get("size");
     const rotation = (this.props.position.get("r") * 360) % 360; // degrees
-    const hull = this.props.hull.get("parts").get(0).get("symbol");
     const style = {
       left: `${this.props.position.get("x") * 100}%`,
       top: `${this.props.position.get("y") * 100}%`,
-      width: `${size}px`,
-      height: `${size}px`,
-      lineHeight: `${size}px`,
-      fontSize: `${size}px`,
-      marginTop: `${-size / 2}px`,
-      marginLeft: `${-size / 2}px`,
+      width: `${size}em`,
+      height: `${size}em`,
+      marginTop: `${-size / 2}em`,
+      marginLeft: `${-size / 2}em`,
       transform: `rotate(${rotation}deg)`,
     };
     const onClick = this._onClick.bind(this);
@@ -37,7 +36,7 @@ class Ship extends React.Component {
         style={style}
         onClick={onClick}
       >
-        {hull}
+        <Hull hull={this.props.hull} />
       </span>
     );
   }

@@ -29,4 +29,12 @@
   position: absolute;
   text-align: center;
   vertical-align: middle;
+  background-color: gray;
+}
+
+.hull {
+  position: absolute;
+  text-align: center;
+  vertical-align: middle;
+  background-color: green;
 }
