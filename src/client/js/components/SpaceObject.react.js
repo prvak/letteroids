@@ -1,6 +1,6 @@
 import React from "react";
 
-import Component from "./Component.react"
+import Component from "./Component.react";
 
 class SpaceObject extends React.Component {
   constructor() {

@@ -207,6 +207,22 @@ class ObjectsStore extends EventEmitter {
     _ships = _ships.withMutations(update);
     _asteroids = _asteroids.withMutations(update);
     _shots = _shots.withMutations(update);
+
+    _shots.forEach((shot) => {
+      const shotPosition = shot.get("position");
+      const shotSize = shot.get("hull").get("size");
+      _asteroids.forEach((asteroid) => {
+        const asteroidPosition = asteroid.get("position");
+        const asteroidSize = asteroid.get("hull").get("size");
+        const dx = asteroidPosition.get("x") - shotPosition.get("x");
+        const dy = asteroidPosition.get("y") - shotPosition.get("y");
+        const distance = Math.sqrt(dx * dx + dy * dy);
+        const collisionDistance = asteroidSize + shotSize;
+        if (distance < collisionDistance) {
+          console.log("Hit");
+        }
+      });
+    });
     _lastTickTimestamp = now;
   }
 

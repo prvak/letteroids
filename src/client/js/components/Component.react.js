@@ -22,7 +22,7 @@ class Component extends React.Component {
     let data = null;
     if (subcomponents) {
       data = [];
-      this.props.hull.get("components").forEach((component, index) => {
+      subcomponents.forEach((component, index) => {
         data.push(<Component key={index} component={component} />);
       });
     } else if (symbol) {
