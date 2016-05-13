@@ -1,6 +1,6 @@
 import React from "react";
 
-import Hull from "./Hull.react"
+import Component from "./Component.react"
 
 class SpaceObject extends React.Component {
   constructor() {
@@ -21,6 +21,7 @@ class SpaceObject extends React.Component {
   render() {
     const size = this.props.hull.get("size");
     const rotation = (this.props.position.get("r") * 360) % 360; // degrees
+    const component = this.props.hull.get("components").get(0);
     const style = {
       left: `${this.props.position.get("x") * 100}%`,
       top: `${this.props.position.get("y") * 100}%`,
@@ -36,7 +37,7 @@ class SpaceObject extends React.Component {
         style={style}
         onClick={onClick}
       >
-        <Hull hull={this.props.hull} />
+        <Component component={component} />
       </span>
     );
   }

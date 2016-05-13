@@ -1,11 +1,10 @@
 import React from "react";
 
-class Hull extends React.Component {
+class Component extends React.Component {
   render() {
-    const part = this.props.hull.get("components").get(0);
-    const size = part.get("size");
-    const symbol = part.get("symbol");
-    const position = part.get("position");
+    const size = this.props.component.get("size");
+    const symbol = this.props.component.get("symbol");
+    const position = this.props.component.get("position");
     const rotation = (position.get("r") * 360) % 360; // degrees
     const style = {
       left: `${position.get("x") * 100}%`,
@@ -28,8 +27,8 @@ class Hull extends React.Component {
   }
 }
 
-Hull.propTypes = {
-  hull: React.PropTypes.object.isRequired,
+Component.propTypes = {
+  component: React.PropTypes.object.isRequired,
 };
 
-export default Hull;
+export default Component;
