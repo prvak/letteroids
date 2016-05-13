@@ -58,10 +58,9 @@ class ObjectsStore extends EventEmitter {
           symbol: "V",
           position: { x: 0.5, y: 0.5, r: 0.5 },
           size: 1.0,
-          radius: 1.0
         },
       ],
-    }
+    };
     const object = this._createObject(id, position, speed, 0, hull);
     _ships = _ships.set(id, object);
     _shipId = id;
@@ -69,24 +68,22 @@ class ObjectsStore extends EventEmitter {
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
-    const speed = { x: 0.1, y: -0.1, r: 0.2 };
+    const speed = { x: 0.0, y: 0.0, r: 0.0 };
     const hull = {
-      size: 1.5,
+      size: 2.5,
       components: [
         {
           symbol: "@",
-          position: { x: 0.7, y: 0.7, r: 0.2 },
+          position: { x: 0.4, y: 0.4, r: 0.2 },
           size: 1.5,
-          radius: 1.0
         },
         {
-          symbol: "X",
-          position: { x: 0.3, y: 0.3, r: 0.7 },
+          symbol: "$",
+          position: { x: 0.6, y: 0.6, r: 0.7 },
           size: 1.5,
-          radius: 1.0
         },
       ],
-    }
+    };
     const object = this._createObject(id, position, speed, 0, hull);
     _asteroids = _asteroids.set(id, object);
   }
@@ -100,10 +97,9 @@ class ObjectsStore extends EventEmitter {
           symbol: "x",
           position: { x: 0.5, y: 0.5, r: 0.5 },
           size: 0.3,
-          radius: 1.0,
         },
       ],
-    }
+    };
     const object = this._createObject(id, position, speed, ttl, hull);
     _shots = _shots.set(id, object);
   }
