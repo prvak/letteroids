@@ -19,10 +19,13 @@
 .space {
   position: absolute;
   background-color: #f0f0ff;
-  top: 20px;
-  bottom: 20px;
-  left: 20px;
-  right: 20px;
+  top: 0px;
+  bottom: 0px;
+  left: 0px;
+  right: 0px;
+  margin: auto;
+  width: 50rem;
+  height: 50rem;
 }
 
 .object {

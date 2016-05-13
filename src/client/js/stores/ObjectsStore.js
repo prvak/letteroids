@@ -14,8 +14,11 @@ let _asteroids = new Immutable.Map({});
 
 // Each object has a unique ID. This is incremented each time a new object is created.
 let _nextObjectId = 1;
+// Timestamp of the last tick event.
 let _lastTickTimestamp = null;
 let _shipId = null;
+// Size of the space in px
+let _spaceSize = 100;
 
 class ObjectsStore extends EventEmitter {
   getShips() {
@@ -28,6 +31,10 @@ class ObjectsStore extends EventEmitter {
 
   getAsteroids() {
     return _asteroids;
+  }
+
+  getBaseUnit() {
+    return _spaceSize / 50;
   }
 
   emitChange() {
@@ -177,18 +184,19 @@ class ObjectsStore extends EventEmitter {
     };
     this.addShot(currentPosition, shotSpeed, ttl);
   }
+  resizeSpace(width, height) {
+    _spaceSize = Math.min(width, height);
+  }
 
   handleTick() {
     const now = this._getTimestamp();
     let update = null;
     if (_lastTickTimestamp === null) {
       update = (objects) => {
-        console.log(objects.size);
         objects.forEach((object) => {
           const objectId = object.get("id");
           objects.set(objectId, this._updateTimestamp(object, now));
         });
-        console.log(objects.size);
       };
     } else {
       update = (objects) => {
@@ -311,6 +319,10 @@ AppDispatcher.register((action) => {
       break;
     case ObjectsConstants.OBJECTS_TICK:
       store.handleTick();
+      store.emitChange();
+      break;
+    case ObjectsConstants.OBJECTS_RESIZE:
+      store.resizeSpace(action.width, action.height);
       store.emitChange();
       break;
     default:

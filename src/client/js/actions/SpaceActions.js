@@ -35,6 +35,13 @@ const SpaceActions = {
       actionType: ObjectsConstants.OBJECTS_TICK,
     });
   },
+  resizeSpace: (width, height) => {
+    AppDispatcher.dispatch({
+      actionType: ObjectsConstants.OBJECTS_RESIZE,
+      width,
+      height,
+    });
+  },
 };
 
 export default SpaceActions;
