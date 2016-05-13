@@ -10,12 +10,12 @@ class Hull extends React.Component {
     const style = {
       left: `${position.get("x") * 100}%`,
       top: `${position.get("y") * 100}%`,
-      width: `${size}em`,
-      height: `${size}em`,
-      lineHeight: `${size}em`,
-      fontSize: `${size}em`,
-      marginTop: `${-size / 2}em`,
-      marginLeft: `${-size / 2}em`,
+      width: `${size}rem`,
+      height: `${size}rem`,
+      lineHeight: `${size}rem`,
+      fontSize: `${size}rem`,
+      marginTop: `${-size / 2}rem`,
+      marginLeft: `${-size / 2}rem`,
       transform: `rotate(${rotation}deg)`,
     };
     return (

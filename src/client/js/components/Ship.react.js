@@ -24,10 +24,10 @@ class Ship extends React.Component {
     const style = {
       left: `${this.props.position.get("x") * 100}%`,
       top: `${this.props.position.get("y") * 100}%`,
-      width: `${size}em`,
-      height: `${size}em`,
-      marginTop: `${-size / 2}em`,
-      marginLeft: `${-size / 2}em`,
+      width: `${size}rem`,
+      height: `${size}rem`,
+      marginTop: `${-size / 2}rem`,
+      marginLeft: `${-size / 2}rem`,
       transform: `rotate(${rotation}deg)`,
     };
     const onClick = this._onClick.bind(this);
