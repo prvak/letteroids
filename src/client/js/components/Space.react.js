@@ -1,7 +1,7 @@
 import React from "react";
 import objectsStore from "../stores/ObjectsStore";
 import SpaceActions from "../actions/SpaceActions";
-import Ship from "../components/Ship.react";
+import SpaceObject from "../components/SpaceObject.react";
 
 class Space extends React.Component {
   constructor() {
@@ -51,7 +51,7 @@ class Space extends React.Component {
   }
 
   _renderObject(object) {
-    return (<Ship
+    return (<SpaceObject
       position={object.get("position")}
       hull={object.get("hull")}
       key={object.get("id")}

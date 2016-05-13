@@ -2,7 +2,7 @@ import React from "react";
 
 import Hull from "./Hull.react"
 
-class Ship extends React.Component {
+class SpaceObject extends React.Component {
   constructor() {
     super();
     this.state = {
@@ -42,9 +42,9 @@ class Ship extends React.Component {
   }
 }
 
-Ship.propTypes = {
+SpaceObject.propTypes = {
   position: React.PropTypes.object.isRequired,
   hull: React.PropTypes.object.isRequired,
 };
 
-export default Ship;
+export default SpaceObject;
