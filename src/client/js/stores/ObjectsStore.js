@@ -69,13 +69,19 @@ class ObjectsStore extends EventEmitter {
 
   addAsteroid(position) {
     const id = `asteroid_${_nextObjectId++}`;
-    const speed = { x: 0, y: 0, r: 0 };
+    const speed = { x: 0.1, y: -0.1, r: 0.2 };
     const hull = {
       size: 1.5,
       components: [
         {
           symbol: "@",
-          position: { x: 0.5, y: 0.5, r: 0.5 },
+          position: { x: 0.7, y: 0.7, r: 0.2 },
+          size: 1.5,
+          radius: 1.0
+        },
+        {
+          symbol: "X",
+          position: { x: 0.3, y: 0.3, r: 0.7 },
           size: 1.5,
           radius: 1.0
         },

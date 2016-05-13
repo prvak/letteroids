@@ -21,7 +21,11 @@ class SpaceObject extends React.Component {
   render() {
     const size = this.props.hull.get("size");
     const rotation = (this.props.position.get("r") * 360) % 360; // degrees
-    const component = this.props.hull.get("components").get(0);
+    const components = [];
+    this.props.hull.get("components").forEach((component, index) => {
+      components.push(<Component key={index} component={component} />);
+    });
+
     const style = {
       left: `${this.props.position.get("x") * 100}%`,
       top: `${this.props.position.get("y") * 100}%`,
@@ -33,11 +37,11 @@ class SpaceObject extends React.Component {
     };
     const onClick = this._onClick.bind(this);
     return (
-      <span className="ship"
+      <span className="object"
         style={style}
         onClick={onClick}
       >
-        <Component component={component} />
+        {components}
       </span>
     );
   }

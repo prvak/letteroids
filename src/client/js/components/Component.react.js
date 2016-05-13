@@ -4,6 +4,7 @@ class Component extends React.Component {
   render() {
     const size = this.props.component.get("size");
     const symbol = this.props.component.get("symbol");
+    const subcomponents = this.props.component.get("components");
     const position = this.props.component.get("position");
     const rotation = (position.get("r") * 360) % 360; // degrees
     const style = {
@@ -17,13 +18,19 @@ class Component extends React.Component {
       marginLeft: `${-size / 2}rem`,
       transform: `rotate(${rotation}deg)`,
     };
-    return (
-      <span className="hull"
-        style={style}
-      >
-        {symbol}
-      </span>
-    );
+
+    let data = null;
+    if (subcomponents) {
+      data = [];
+      this.props.hull.get("components").forEach((component, index) => {
+        data.push(<Component key={index} component={component} />);
+      });
+    } else if (symbol) {
+      data = symbol;
+    } else {
+      console.log("Something is wrong");
+    }
+    return <span className="component" style={style} > {data} </span>;
   }
 }
 

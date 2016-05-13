@@ -25,14 +25,14 @@
   right: 20px;
 }
 
-.ship {
+.object {
   position: absolute;
   text-align: center;
   vertical-align: middle;
   background-color: gray;
 }
 
-.hull {
+.component {
   position: absolute;
   text-align: center;
   vertical-align: middle;
