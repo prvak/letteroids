@@ -1,8 +1,10 @@
 import React from "react";
+
 import objectsStore from "../stores/SpaceStore";
 import Space from "../components/Space.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
+import Utils from "../Utils";
 
 function getAppState() {
   return {
@@ -13,10 +15,18 @@ function getAppState() {
   };
 }
 
+// Rotation speed in full rotations per second.
+const SHIP_ROTATION_SPEED = 0.6;
+// Acceleration in screens per second^2.
+const SHIP_ACCELERATION = 0.3;
+// Number of shots fired per second.
+const SHIP_SHOOTING_SPEED = 10;
+
 class App extends React.Component {
   constructor() {
     super();
     this.state = getAppState();
+    this._lastShotTs = Utils.now();
     this._onChange = () => {
       this.setState(getAppState());
     };
@@ -24,18 +34,24 @@ class App extends React.Component {
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(shipId, -0.6);
+          SpaceActions.rotateShip(shipId, -SHIP_ROTATION_SPEED);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(shipId, 0.6);
+          SpaceActions.rotateShip(shipId, SHIP_ROTATION_SPEED);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(shipId, 0.3);
+          SpaceActions.accelerateShip(shipId, SHIP_ACCELERATION);
           break;
         case "Space":
           if (!this._shootTimer) {
-            this._onShoot();
-            this._shootTimer = setInterval(this._onShoot, 500);
+            const now = Utils.now();
+            const sinceLastShot = now - this._lastShotTs;
+            const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
+            if (sinceLastShot >= minSinceLastShot) {
+              this._onShoot();
+            } else {
+              this._shootTimer = setTimeout(this._onShoot, minSinceLastShot - sinceLastShot);
+            }
           }
           break;
         default:
@@ -56,7 +72,7 @@ class App extends React.Component {
           break;
         case "Space":
           if (this._shootTimer) {
-            clearInterval(this._shootTimer);
+            clearTimeout(this._shootTimer);
             this._shootTimer = null;
           }
           break;
@@ -68,6 +84,8 @@ class App extends React.Component {
       SpaceActions.nextTick();
     };
     this._onShoot = () => {
+      this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
+      this._lastShotTs = Date.now();
       SpaceActions.shoot(0.3, 3000);
     };
     this._onResize = () => {

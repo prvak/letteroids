@@ -3,6 +3,7 @@ import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
+import Utils from "../Utils";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
@@ -377,7 +378,7 @@ class SpaceStore extends EventEmitter {
   }
 
   _getTimestamp() {
-    return Date.now();
+    return Utils.now();
   }
 }
 
