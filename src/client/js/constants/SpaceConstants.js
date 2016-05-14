@@ -1,4 +1,4 @@
-const ObjectsConstants = {
+const SpaceConstants = {
   OBJECTS_ADD_ASTEROID: "OBJECTS_ADD_ASTEROID",
   OBJECTS_ROTATE_SHIP: "OBJECTS_ROTATE_SHIP",
   OBJECTS_ACCELERATE_SHIP: "OBJECTS_ACCELERATE_SHIP",
@@ -9,4 +9,4 @@ const ObjectsConstants = {
   SPACE_SIZE: 50,
 };
 
-export default ObjectsConstants;
+export default SpaceConstants;

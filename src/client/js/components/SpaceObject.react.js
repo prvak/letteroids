@@ -1,7 +1,7 @@
 import React from "react";
 
 import Component from "./Component.react";
-import ObjectsConstants from "../constants/ObjectsConstants";
+import SpaceConstants from "../constants/SpaceConstants";
 
 class SpaceObject extends React.Component {
   constructor() {
@@ -20,7 +20,7 @@ class SpaceObject extends React.Component {
   }
 
   render() {
-    const size = this.props.hull.get("size") * ObjectsConstants.SPACE_SIZE;
+    const size = this.props.hull.get("size") * SpaceConstants.SPACE_SIZE;
     const rotation = (this.props.position.get("r") * 360) % 360; // degrees
     const components = [];
     this.props.hull.get("components").forEach((component, index) => {

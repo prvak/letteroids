@@ -2,7 +2,7 @@ import React from "react";
 import objectsStore from "../stores/ObjectsStore";
 import Space from "../components/Space.react";
 import SpaceActions from "../actions/SpaceActions";
-import ObjectsConstants from "../constants/ObjectsConstants";
+import SpaceConstants from "../constants/SpaceConstants";
 
 function getAppState() {
   return {
@@ -77,7 +77,7 @@ class App extends React.Component {
       const g = d.getElementsByTagName("body")[0];
       const width = w.innerWidth || e.clientWidth || g.clientWidth;
       const height = w.innerHeight || e.clientHeight || g.clientHeight;
-      const unit = Math.min(width, height) / ObjectsConstants.SPACE_SIZE;
+      const unit = Math.min(width, height) / SpaceConstants.SPACE_SIZE;
       document.getElementsByTagName("html")[0].style["font-size"] = `${unit}px`;
     };
   }

@@ -2,7 +2,7 @@ import events from "events";
 import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
-import ObjectsConstants from "../constants/ObjectsConstants";
+import SpaceConstants from "../constants/SpaceConstants";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
@@ -20,8 +20,8 @@ let _lastTickTimestamp = null;
 let _shipId = null;
 // Current size of the space.
 const _spaceDimensions = {
-  width: ObjectsConstants.SPACE_SIZE,
-  height: ObjectsConstants.SPACE_SIZE,
+  width: SpaceConstants.SPACE_SIZE,
+  height: SpaceConstants.SPACE_SIZE,
 };
 
 class ObjectsStore extends EventEmitter {
@@ -303,23 +303,23 @@ store.addShip({ x: 0.5, y: 0.5, r: 0.0 });
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
   switch (action.actionType) {
-    case ObjectsConstants.OBJECTS_ADD_ASTEROID:
+    case SpaceConstants.OBJECTS_ADD_ASTEROID:
       store.addAsteroid(action.position, action.speed);
       store.emitChange();
       break;
-    case ObjectsConstants.OBJECTS_ROTATE_SHIP:
+    case SpaceConstants.OBJECTS_ROTATE_SHIP:
       store.rotateShip(_shipId, action.rotationChange);
       store.emitChange();
       break;
-    case ObjectsConstants.OBJECTS_ACCELERATE_SHIP:
+    case SpaceConstants.OBJECTS_ACCELERATE_SHIP:
       store.accelerateShip(_shipId, action.force);
       store.emitChange();
       break;
-    case ObjectsConstants.OBJECTS_SHOOT:
+    case SpaceConstants.OBJECTS_SHOOT:
       store.shoot(_shipId, action.force, action.ttl);
       store.emitChange();
       break;
-    case ObjectsConstants.OBJECTS_TICK:
+    case SpaceConstants.OBJECTS_TICK:
       store.handleTick();
       store.emitChange();
       break;

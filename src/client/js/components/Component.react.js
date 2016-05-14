@@ -1,10 +1,10 @@
 import React from "react";
 
-import ObjectsConstants from "../constants/ObjectsConstants";
+import SpaceConstants from "../constants/SpaceConstants";
 
 class Component extends React.Component {
   render() {
-    const size = this.props.component.get("size") * ObjectsConstants.SPACE_SIZE;
+    const size = this.props.component.get("size") * SpaceConstants.SPACE_SIZE;
     const symbol = this.props.component.get("symbol");
     const subcomponents = this.props.component.get("components");
     const position = this.props.component.get("position");
