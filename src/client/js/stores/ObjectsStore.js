@@ -16,13 +16,15 @@ let _asteroids = new Immutable.Map({});
 let _nextObjectId = 1;
 // Timestamp of the last tick event.
 let _lastTickTimestamp = null;
+// There is one ship. This is its id.
 let _shipId = null;
-// All distances will be measured in rem uints. This is the actual size of the unit in px.
+// Distances are be measured in rem units. This is the actual size of the unit in px.
 let _unit = 10;
-// Space is a square. This is the length of its side.
-const SPACE_SIZE = 50;
 // Current size of the space.
-const _spaceDimensions = { width: SPACE_SIZE, height: SPACE_SIZE };
+const _spaceDimensions = {
+  width: ObjectsConstants.SPACE_SIZE,
+  height: ObjectsConstants.SPACE_SIZE,
+};
 
 class ObjectsStore extends EventEmitter {
   getShips() {
@@ -195,7 +197,7 @@ class ObjectsStore extends EventEmitter {
   }
 
   resizeSpace(width, height) {
-    _unit = Math.min(width, height) / SPACE_SIZE;
+    _unit = Math.min(width, height) / ObjectsConstants.SPACE_SIZE;
   }
 
   handleTick() {
@@ -234,10 +236,10 @@ class ObjectsStore extends EventEmitter {
         const asteroidSize = asteroid.get("hull").get("size");
         const dx = asteroidPosition.get("x") - shotPosition.get("x");
         const dy = asteroidPosition.get("y") - shotPosition.get("y");
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const collisionDistance = asteroidSize + shotSize;
+        const distance = Math.sqrt(dx * dx + dy * dy) * ObjectsConstants.SPACE_SIZE;
+        const collisionDistance = (asteroidSize + shotSize) / 2;
         if (distance < collisionDistance) {
-          console.log("Hit");
+          console.log(distance, collisionDistance);
         }
       });
     });

@@ -5,6 +5,8 @@ const ObjectsConstants = {
   OBJECTS_SHOOT: "OBJECTS_SHOOT",
   OBJECTS_TICK: "OBJECTS_TICK",
   OBJECTS_RESIZE: "OBJECTS_RESIZE",
+  // Space is a square. This is the length of its side in rem units.
+  SPACE_SIZE: 50,
 };
 
 export default ObjectsConstants;
