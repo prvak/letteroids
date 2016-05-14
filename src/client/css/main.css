@@ -24,6 +24,7 @@
   left: 0px;
   right: 0px;
   margin: auto;
+  overflow: hidden;
 }
 
 .object {
