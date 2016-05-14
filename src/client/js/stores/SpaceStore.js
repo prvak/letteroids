@@ -229,7 +229,8 @@ class SpaceStore extends EventEmitter {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const collisionDistance = (asteroidSize + shotSize) / 2;
         if (distance < collisionDistance) {
-          console.log(distance, collisionDistance);
+          _asteroids = _asteroids.delete(asteroid.get("id"));
+          _shots = _shots.delete(shot.get("id"));
         }
       });
     });
