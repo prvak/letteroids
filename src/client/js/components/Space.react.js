@@ -15,20 +15,19 @@ class Space extends React.Component {
       position.r = 0; // degrees
       SpaceActions.addAsteroid(position);
     };
+    this._onChange = () => {
+      return {
+        ships: objectsStore.getShips(),
+      };
+    };
   }
 
   componentDidMount() {
-    objectsStore.addChangeListener(this._onChange.bind(this));
+    objectsStore.addChangeListener(this._onChange);
   }
 
   componentWillUnmount() {
-    objectsStore.removeChangeListener(this._onChange.bind(this));
-  }
-
-  _onChange() {
-    return {
-      ships: objectsStore.getShips(),
-    };
+    objectsStore.removeChangeListener(this._onChange);
   }
 
   _relativeMousePosition(event) {
@@ -69,10 +68,15 @@ class Space extends React.Component {
     this.props.asteroids.forEach((object) => {
       objects.push(this._renderObject(object));
     });
+    const style = {
+      width: `${this.props.dimensions.width}rem`,
+      height: `${this.props.dimensions.height}rem`,
+    };
     return (
       <div
         className="space"
         onClick={this._onClick}
+        style={style}
       >
         {objects}
       </div>
@@ -84,6 +88,7 @@ Space.propTypes = {
   ships: React.PropTypes.object.isRequired,
   shots: React.PropTypes.object.isRequired,
   asteroids: React.PropTypes.object.isRequired,
+  dimensions: React.PropTypes.object.isRequired,
 };
 
 export default Space;

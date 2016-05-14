@@ -17,8 +17,12 @@ let _nextObjectId = 1;
 // Timestamp of the last tick event.
 let _lastTickTimestamp = null;
 let _shipId = null;
-// Size of the space in px
-let _spaceSize = 100;
+// All distances will be measured in rem uints. This is the actual size of the unit in px.
+let _unit = 10;
+// Space is a square. This is the length of its side.
+const SPACE_SIZE = 50;
+// Current size of the space.
+const _spaceDimensions = { width: SPACE_SIZE, height: SPACE_SIZE };
 
 class ObjectsStore extends EventEmitter {
   getShips() {
@@ -34,7 +38,12 @@ class ObjectsStore extends EventEmitter {
   }
 
   getBaseUnit() {
-    return _spaceSize / 50;
+    return _unit;
+  }
+
+  /** Width and height of the space in rem units. */
+  getDimensions() {
+    return _spaceDimensions;
   }
 
   emitChange() {
@@ -184,8 +193,9 @@ class ObjectsStore extends EventEmitter {
     };
     this.addShot(currentPosition, shotSpeed, ttl);
   }
+
   resizeSpace(width, height) {
-    _spaceSize = Math.min(width, height);
+    _unit = Math.min(width, height) / SPACE_SIZE;
   }
 
   handleTick() {
