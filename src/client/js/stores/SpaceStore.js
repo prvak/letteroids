@@ -78,34 +78,72 @@ class SpaceStore extends EventEmitter {
     _shipId = id;
   }
 
-  addAsteroid(position) {
+  addAsteroid(position, defaultSpeed, defaultHull) {
+    let speed = defaultSpeed;
+    let hull = defaultHull;
+    if (!speed) {
+      speed = { x: 0.0, y: 0.0, r: 0.0 };
+    }
+    if (!hull) {
+      hull = {
+        size: 0.09,
+        components: [
+          {
+            size: 0.06,
+            position: { x: 0.6, y: 0.4, r: 0.2 },
+            components: [
+              {
+                symbol: "@",
+                position: { x: 0.3, y: 0.4, r: 0.2 },
+                size: 0.03,
+              },
+              {
+                symbol: "$",
+                position: { x: 0.6, y: 0.7, r: 0.7 },
+                size: 0.03,
+              },
+              {
+                symbol: "%",
+                position: { x: 0.3, y: 0.6, r: 0.2 },
+                size: 0.03,
+              },
+              {
+                symbol: "H",
+                position: { x: 0.6, y: 0.3, r: 0.4 },
+                size: 0.03,
+              },
+            ],
+          },
+          {
+            size: 0.06,
+            position: { x: 0.4, y: 0.6, r: 0.2 },
+            components: [
+              {
+                symbol: "@",
+                position: { x: 0.3, y: 0.4, r: 0.2 },
+                size: 0.03,
+              },
+              {
+                symbol: "$",
+                position: { x: 0.6, y: 0.7, r: 0.7 },
+                size: 0.03,
+              },
+              {
+                symbol: "%",
+                position: { x: 0.3, y: 0.6, r: 0.2 },
+                size: 0.03,
+              },
+              {
+                symbol: "H",
+                position: { x: 0.6, y: 0.3, r: 0.4 },
+                size: 0.03,
+              },
+            ],
+          },
+        ],
+      };
+    }
     const id = `asteroid_${_nextObjectId++}`;
-    const speed = { x: 0.0, y: 0.0, r: 0.0 };
-    const hull = {
-      size: 0.06,
-      components: [
-        {
-          symbol: "@",
-          position: { x: 0.3, y: 0.4, r: 0.2 },
-          size: 0.03,
-        },
-        {
-          symbol: "$",
-          position: { x: 0.6, y: 0.7, r: 0.7 },
-          size: 0.03,
-        },
-        {
-          symbol: "%",
-          position: { x: 0.3, y: 0.6, r: 0.2 },
-          size: 0.03,
-        },
-        {
-          symbol: "H",
-          position: { x: 0.6, y: 0.3, r: 0.4 },
-          size: 0.03,
-        },
-      ],
-    };
     const object = this._createObject(id, position, speed, 0, hull);
     _asteroids = _asteroids.set(id, object);
   }
@@ -231,7 +269,7 @@ class SpaceStore extends EventEmitter {
     _shots.forEach((shot) => {
       const shotPosition = shot.get("position");
       const shotSize = shot.get("hull").get("size");
-      _asteroids.forEach((asteroid) => {
+      _asteroids.some((asteroid) => {
         const asteroidPosition = asteroid.get("position");
         const asteroidSize = asteroid.get("hull").get("size");
         const dx = asteroidPosition.get("x") - shotPosition.get("x");
@@ -239,9 +277,44 @@ class SpaceStore extends EventEmitter {
         const distance = Math.sqrt(dx * dx + dy * dy);
         const collisionDistance = (asteroidSize + shotSize) / 2;
         if (distance < collisionDistance) {
-          _asteroids = _asteroids.delete(asteroid.get("id"));
           _shots = _shots.delete(shot.get("id"));
+          _asteroids = _asteroids.delete(asteroid.get("id"));
+          const components = asteroid.get("hull").get("components");
+          if (components.size > 1) {
+            // The asteroid is big enough to be split.
+            components.forEach((component) => {
+              const subcomponents = component.get("components");
+              const componentSize = component.get("size");
+              let hull = null;
+              if (subcomponents) {
+                hull = {
+                  size: componentSize,
+                  components: subcomponents.toJS(),
+                };
+              } else {
+                hull = {
+                  size: componentSize,
+                  components: [component.toJS()],
+                };
+                hull.components[0].position.x = 0.5;
+                hull.components[0].position.y = 0.5;
+                hull.components[0].position.r = 0.0;
+              }
+              const x = (component.get("position").get("x") - 0.5) * asteroidSize;
+              const y = (component.get("position").get("y") - 0.5) * asteroidSize;
+              const angle = asteroidPosition.get("r") * 2 * Math.PI;
+              const position = {
+                x: (x * Math.cos(angle) - y * Math.sin(angle)) + asteroidPosition.get("x"),
+                y: (x * Math.sin(angle) + y * Math.cos(angle)) + asteroidPosition.get("y"),
+                r: (component.get("position").get("r") + asteroidPosition.get("r")) % 1.0,
+              };
+              const speed = asteroid.get("speed").toJS();
+              this.addAsteroid(position, speed, hull);
+            });
+          }
+          return true;
         }
+        return false;
       });
     });
     _lastTickTimestamp = now;
@@ -310,6 +383,7 @@ class SpaceStore extends EventEmitter {
 
 const store = new SpaceStore();
 store.addShip({ x: 0.5, y: 0.5, r: 0.0 });
+store.addAsteroid({ x: 0.5, y: 0.4, r: 0.1 });
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
