@@ -24,7 +24,7 @@ const _spaceDimensions = {
   height: SpaceConstants.SPACE_SIZE,
 };
 
-class ObjectsStore extends EventEmitter {
+class SpaceStore extends EventEmitter {
   getShips() {
     return _ships;
   }
@@ -297,7 +297,7 @@ class ObjectsStore extends EventEmitter {
   }
 }
 
-const store = new ObjectsStore();
+const store = new SpaceStore();
 store.addShip({ x: 0.5, y: 0.5, r: 0.0 });
 
 // Register callback to handle all updates

@@ -1,5 +1,5 @@
 import React from "react";
-import objectsStore from "../stores/ObjectsStore";
+import objectsStore from "../stores/SpaceStore";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceObject from "../components/SpaceObject.react";
 
