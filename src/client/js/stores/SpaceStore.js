@@ -82,16 +82,26 @@ class SpaceStore extends EventEmitter {
     const id = `asteroid_${_nextObjectId++}`;
     const speed = { x: 0.0, y: 0.0, r: 0.0 };
     const hull = {
-      size: 0.05,
+      size: 0.06,
       components: [
         {
           symbol: "@",
-          position: { x: 0.4, y: 0.4, r: 0.2 },
+          position: { x: 0.3, y: 0.4, r: 0.2 },
           size: 0.03,
         },
         {
           symbol: "$",
-          position: { x: 0.6, y: 0.6, r: 0.7 },
+          position: { x: 0.6, y: 0.7, r: 0.7 },
+          size: 0.03,
+        },
+        {
+          symbol: "%",
+          position: { x: 0.3, y: 0.6, r: 0.2 },
+          size: 0.03,
+        },
+        {
+          symbol: "H",
+          position: { x: 0.6, y: 0.3, r: 0.4 },
           size: 0.03,
         },
       ],
