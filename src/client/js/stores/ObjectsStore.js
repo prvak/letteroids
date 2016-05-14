@@ -18,8 +18,6 @@ let _nextObjectId = 1;
 let _lastTickTimestamp = null;
 // There is one ship. This is its id.
 let _shipId = null;
-// Distances are be measured in rem units. This is the actual size of the unit in px.
-let _unit = 10;
 // Current size of the space.
 const _spaceDimensions = {
   width: ObjectsConstants.SPACE_SIZE,
@@ -37,10 +35,6 @@ class ObjectsStore extends EventEmitter {
 
   getAsteroids() {
     return _asteroids;
-  }
-
-  getBaseUnit() {
-    return _unit;
   }
 
   /** Width and height of the space in rem units. */
@@ -70,12 +64,12 @@ class ObjectsStore extends EventEmitter {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
     const hull = {
-      size: 1,
+      size: 0.02,
       components: [
         {
           symbol: "V",
           position: { x: 0.5, y: 0.5, r: 0.5 },
-          size: 1.0,
+          size: 0.02,
         },
       ],
     };
@@ -88,17 +82,17 @@ class ObjectsStore extends EventEmitter {
     const id = `asteroid_${_nextObjectId++}`;
     const speed = { x: 0.0, y: 0.0, r: 0.0 };
     const hull = {
-      size: 2.5,
+      size: 0.05,
       components: [
         {
           symbol: "@",
           position: { x: 0.4, y: 0.4, r: 0.2 },
-          size: 1.5,
+          size: 0.03,
         },
         {
           symbol: "$",
           position: { x: 0.6, y: 0.6, r: 0.7 },
-          size: 1.5,
+          size: 0.03,
         },
       ],
     };
@@ -109,12 +103,12 @@ class ObjectsStore extends EventEmitter {
   addShot(position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
     const hull = {
-      size: 0.3,
+      size: 0.006,
       components: [
         {
           symbol: "x",
           position: { x: 0.5, y: 0.5, r: 0.5 },
-          size: 0.3,
+          size: 0.006,
         },
       ],
     };
@@ -196,10 +190,6 @@ class ObjectsStore extends EventEmitter {
     this.addShot(currentPosition, shotSpeed, ttl);
   }
 
-  resizeSpace(width, height) {
-    _unit = Math.min(width, height) / ObjectsConstants.SPACE_SIZE;
-  }
-
   handleTick() {
     const now = this._getTimestamp();
     let update = null;
@@ -236,7 +226,7 @@ class ObjectsStore extends EventEmitter {
         const asteroidSize = asteroid.get("hull").get("size");
         const dx = asteroidPosition.get("x") - shotPosition.get("x");
         const dy = asteroidPosition.get("y") - shotPosition.get("y");
-        const distance = Math.sqrt(dx * dx + dy * dy) * ObjectsConstants.SPACE_SIZE;
+        const distance = Math.sqrt(dx * dx + dy * dy);
         const collisionDistance = (asteroidSize + shotSize) / 2;
         if (distance < collisionDistance) {
           console.log(distance, collisionDistance);
@@ -331,10 +321,6 @@ AppDispatcher.register((action) => {
       break;
     case ObjectsConstants.OBJECTS_TICK:
       store.handleTick();
-      store.emitChange();
-      break;
-    case ObjectsConstants.OBJECTS_RESIZE:
-      store.resizeSpace(action.width, action.height);
       store.emitChange();
       break;
     default:

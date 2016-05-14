@@ -2,13 +2,13 @@ import React from "react";
 import objectsStore from "../stores/ObjectsStore";
 import Space from "../components/Space.react";
 import SpaceActions from "../actions/SpaceActions";
+import ObjectsConstants from "../constants/ObjectsConstants";
 
 function getAppState() {
   return {
     ships: objectsStore.getShips(),
     shots: objectsStore.getShots(),
     asteroids: objectsStore.getAsteroids(),
-    unit: objectsStore.getBaseUnit(),
     dimensions: objectsStore.getDimensions(),
   };
 }
@@ -19,7 +19,6 @@ class App extends React.Component {
     this.state = getAppState();
     this._onChange = () => {
       this.setState(getAppState());
-      document.getElementsByTagName("html")[0].style["font-size"] = `${this.state.unit}px`;
     };
     this._onKeyDown = (event) => {
       const shipId = 1;
@@ -69,7 +68,7 @@ class App extends React.Component {
       SpaceActions.nextTick();
     };
     this._onShoot = () => {
-      SpaceActions.shoot(0.3, 3000);
+      SpaceActions.shoot(0.05, 3000);
     };
     this._onResize = () => {
       const w = window;
@@ -78,7 +77,8 @@ class App extends React.Component {
       const g = d.getElementsByTagName("body")[0];
       const width = w.innerWidth || e.clientWidth || g.clientWidth;
       const height = w.innerHeight || e.clientHeight || g.clientHeight;
-      SpaceActions.resizeSpace(width, height);
+      const unit = Math.min(width, height) / ObjectsConstants.SPACE_SIZE;
+      document.getElementsByTagName("html")[0].style["font-size"] = `${unit}px`;
     };
   }
 
