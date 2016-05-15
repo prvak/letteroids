@@ -3,7 +3,8 @@ import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
-import Utils from "../Utils";
+import HtmlUtils from "../HtmlUtils";
+import VectorMath from "../VectorMath";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
@@ -185,51 +186,74 @@ class SpaceStore extends EventEmitter {
   rotateShip(shipId, rotationSpeed) {
     let object = _ships.get(shipId);
     const now = this._getTimestamp();
-    const currentSpeed = this._computeCurrentSpeed(object, now);
+    const ts = object.get("ts");
+    const duration = (now - ts) / 1000;
+    const speed = object.get("initialSpeed").toJS();
+    const position = object.get("initialPosition").toJS();
+    const acceleration = object.get("acceleration").toJS();
+
+    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
     currentSpeed.r = rotationSpeed;
-    const currentPosition = this._computeCurrentPosition(object, now);
-    object = object.set("initialPosition", new Immutable.Map(currentPosition));
-    object = object.set("position", new Immutable.Map(currentPosition));
-    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
-    object = object.set("speed", new Immutable.Map(currentSpeed));
-    object = object.set("ts", now);
+    object = object.withMutations((o) => {
+      const p = new Immutable.Map(currentPosition);
+      const s = new Immutable.Map(currentSpeed);
+      o.set("initialPosition", p);
+      o.set("position", p);
+      o.set("initialSpeed", s);
+      o.set("speed", s);
+      o.set("ts", now);
+    });
     _ships = _ships.set(shipId, object);
   }
 
   accelerateShip(shipId, force) {
     let object = _ships.get(shipId);
     const now = this._getTimestamp();
-    const currentSpeed = this._computeCurrentSpeed(object, now);
-    const currentPosition = this._computeCurrentPosition(object, now);
+    const ts = object.get("ts");
+    const duration = (now - ts) / 1000;
+    const speed = object.get("initialSpeed").toJS();
+    const position = object.get("initialPosition").toJS();
+    const acceleration = object.get("acceleration").toJS();
+
+    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
     const angle = currentPosition.r * 2 * Math.PI;
-    const acceleration = {
+    const currentAcceleration = {
       x: force * Math.sin(angle),
       y: -force * Math.cos(angle),
       r: 0.0,
     };
-    object = object.set("initialPosition", new Immutable.Map(currentPosition));
-    object = object.set("position", new Immutable.Map(currentPosition));
-    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
-    object = object.set("speed", new Immutable.Map(currentSpeed));
-    object = object.set("ts", now);
-    object = object.set("acceleration", new Immutable.Map(acceleration));
+    object = object.withMutations((o) => {
+      const p = new Immutable.Map(currentPosition);
+      const s = new Immutable.Map(currentSpeed);
+      const a = new Immutable.Map(currentAcceleration);
+      o.set("initialPosition", p);
+      o.set("position", p);
+      o.set("initialSpeed", s);
+      o.set("speed", s);
+      o.set("acceleration", a);
+      o.set("ts", now);
+    });
     _ships = _ships.set(shipId, object);
   }
 
   shoot(shipId, force, ttl) {
-    let object = _ships.get(shipId);
-    // Update position.
+    const object = _ships.get(shipId);
     const now = this._getTimestamp();
-    const currentSpeed = this._computeCurrentSpeed(object, now);
-    const currentPosition = this._computeCurrentPosition(object, now);
-    object = object.set("initialPosition", new Immutable.Map(currentPosition));
-    object = object.set("position", new Immutable.Map(currentPosition));
-    object = object.set("initialSpeed", new Immutable.Map(currentSpeed));
-    object = object.set("speed", new Immutable.Map(currentSpeed));
-    object = object.set("ts", now);
-    _ships = _ships.set(shipId, object);
+    const ts = object.get("ts");
+    const duration = (now - ts) / 1000;
+    const speed = object.get("initialSpeed").toJS();
+    const position = object.get("initialPosition").toJS();
+    const acceleration = object.get("acceleration").toJS();
 
-    // Shoot.
+    // Compute current position so we know from where the shot is actually fired.
+    // Also compute current speed so the shot is fired with speed relative to
+    // ships speed.
+    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
+
+    // Shoot!
     const angle = currentPosition.r * 2 * Math.PI;
     const shotSpeed = {
       x: force * Math.sin(angle) + currentSpeed.x,
@@ -239,33 +263,55 @@ class SpaceStore extends EventEmitter {
     this.addShot(currentPosition, shotSpeed, ttl);
   }
 
-  handleTick() {
-    const now = this._getTimestamp();
-    let update = null;
-    if (_lastTickTimestamp === null) {
-      update = (objects) => {
-        objects.forEach((object) => {
-          const objectId = object.get("id");
-          objects.set(objectId, this._updateTimestamp(object, now));
-        });
-      };
-    } else {
-      update = (objects) => {
-        objects.forEach((object) => {
-          const objectId = object.get("id");
-          const expires = object.get("expiresAt");
-          if (expires && expires < now) {
-            objects.delete(objectId);
-          } else {
-            const currentPosition = this._computeCurrentPosition(object, now);
-            objects.set(objectId, object.set("position", new Immutable.Map(currentPosition)));
-          }
-        });
-      };
-    }
+  _resetTimestamps(now) {
+    _lastTickTimestamp = now;
+    const reset = (objects) => {
+      objects.forEach((object) => {
+        const id = object.get("id");
+        objects.set(id, object.set("ts", now));
+      });
+    };
+    _ships = _ships.withMutations(reset);
+    _asteroids = _asteroids.withMutations(reset);
+    _shots = _shots.withMutations(reset);
+  }
+
+  _updatePositionsAndSpeeds(now) {
+    const update = (objects) => {
+      objects.forEach((object) => {
+        const objectId = object.get("id");
+        const expires = object.get("expiresAt");
+        if (expires && expires < now) {
+          objects.delete(objectId);
+        } else {
+          const ts = object.get("ts");
+          const duration = (now - ts) / 1000;
+          const speed = object.get("initialSpeed").toJS();
+          const position = object.get("initialPosition").toJS();
+          const acceleration = object.get("acceleration").toJS();
+
+          const currentPosition = VectorMath.currentPosition(
+            position, speed, acceleration, duration);
+          const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
+          objects.set(objectId, object.withMutations((o) => {
+            o.set("position", new Immutable.Map(currentPosition));
+            o.set("speed", new Immutable.Map(currentSpeed));
+          }));
+        }
+      });
+    };
     _ships = _ships.withMutations(update);
     _asteroids = _asteroids.withMutations(update);
     _shots = _shots.withMutations(update);
+  }
+
+  handleTick() {
+    const now = this._getTimestamp();
+    if (_lastTickTimestamp === null) {
+      this._resetTimestamps(now);
+    } else {
+      this._updatePositionsAndSpeeds(now);
+    }
 
     _shots.forEach((shot) => {
       const shotPosition = shot.get("position");
@@ -321,64 +367,8 @@ class SpaceStore extends EventEmitter {
     _lastTickTimestamp = now;
   }
 
-  _computeCurrentPosition(object, now) {
-    const ts = object.get("ts");
-    const t = (now - ts) / 1000;
-    const initialSpeed = object.get("initialSpeed");
-    const initialPosition = object.get("initialPosition");
-    const acceleration = object.get("acceleration");
-    const currentPosition = {};
-    ["x", "y", "r"].forEach((dimension) => {
-      const p = initialPosition.get(dimension);
-      const v = initialSpeed.get(dimension);
-      const a = acceleration.get(dimension);
-      // Compute distance traveled by a constantly accelerated object.
-      // s = a*(t^2)/2 + v*t
-      const s = a * t * t / 2 + v * t;
-      // Normalize to interval [0:1).
-      let newP = (p + s) % 1.0;
-      if (newP < 0) {
-        newP += 1.0;
-      }
-      currentPosition[dimension] = newP;
-    });
-    return currentPosition;
-  }
-
-  _computeCurrentSpeed(object, now) {
-    const ts = object.get("ts");
-    const t = (now - ts) / 1000;
-    const initialSpeed = object.get("initialSpeed");
-    const acceleration = object.get("acceleration");
-    const currentSpeed = {};
-    ["x", "y", "r"].forEach((dimension) => {
-      const v = initialSpeed.get(dimension);
-      const a = acceleration.get(dimension);
-      // Compute speed of a constantly accelerated object.
-      // u = a*t
-      const u = a * t;
-      currentSpeed[dimension] = v + u;
-    });
-    return currentSpeed;
-  }
-
-  _updateTimestamp(object, now) {
-    return object.set("timestamp", now);
-  }
-
-  _changePosition(object, positionChange) {
-    const position = object.get("position");
-    const newPosition = {};
-    ["x", "y", "r"].forEach((dimension) => {
-      let newValue = position.get(dimension) + positionChange[dimension];
-      newValue = ((newValue * 100) % 100) / 100;
-      newPosition[dimension] = newValue;
-    });
-    return object.set("position", new Immutable.Map(newPosition));
-  }
-
   _getTimestamp() {
-    return Utils.now();
+    return HtmlUtils.now();
   }
 }
 

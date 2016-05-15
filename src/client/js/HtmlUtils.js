@@ -1,7 +1,7 @@
-const Utils = {
+const HtmlUtils = {
   now: () => {
     return Date.now();
   },
 };
 
-export default Utils;
+export default HtmlUtils;

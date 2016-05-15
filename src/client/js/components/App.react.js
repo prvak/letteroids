@@ -4,7 +4,7 @@ import objectsStore from "../stores/SpaceStore";
 import Space from "../components/Space.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
-import Utils from "../Utils";
+import HtmlUtils from "../HtmlUtils";
 
 function getAppState() {
   return {
@@ -26,7 +26,7 @@ class App extends React.Component {
   constructor() {
     super();
     this.state = getAppState();
-    this._lastShotTs = Utils.now();
+    this._lastShotTs = HtmlUtils.now();
     this._onChange = () => {
       this.setState(getAppState());
     };
@@ -44,7 +44,7 @@ class App extends React.Component {
           break;
         case "Space":
           if (!this._shootTimer) {
-            const now = Utils.now();
+            const now = HtmlUtils.now();
             const sinceLastShot = now - this._lastShotTs;
             const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
             if (sinceLastShot >= minSinceLastShot) {
