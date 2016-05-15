@@ -3,6 +3,10 @@ import React from "react";
 import SpaceConstants from "../constants/SpaceConstants";
 
 class Component extends React.Component {
+  shouldComponentUpdate(nextProps) {
+    return this.props.component !== nextProps.component;
+  }
+
   render() {
     const size = this.props.component.get("size") * SpaceConstants.SPACE_SIZE;
     const symbol = this.props.component.get("symbol");

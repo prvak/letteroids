@@ -21,6 +21,8 @@ const SHIP_ROTATION_SPEED = 0.6;
 const SHIP_ACCELERATION = 0.3;
 // Number of shots fired per second.
 const SHIP_SHOOTING_SPEED = 10;
+const FPS = 30;
+const SHOT_TTL = 3000;
 
 class App extends React.Component {
   constructor() {
@@ -86,7 +88,7 @@ class App extends React.Component {
     this._onShoot = () => {
       this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
       this._lastShotTs = Date.now();
-      SpaceActions.shoot(0.3, 3000);
+      SpaceActions.shoot(0.3, SHOT_TTL);
     };
     this._onResize = () => {
       const w = window;
@@ -105,7 +107,7 @@ class App extends React.Component {
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
     window.addEventListener("resize", this._onResize);
-    this._tickTimer = setInterval(this._onTick, 1000 / 30);
+    this._tickTimer = setInterval(this._onTick, 1000 / FPS);
     this._onResize();
   }
 
