@@ -70,6 +70,16 @@ const VectorMath = {
     };
     return newSpeed;
   },
+
+  direction: (from, to) => {
+    // Object {x: 0.5, y: 0.4, r: 0.1} Object {x: 0.5, y: 0.4448, r: 0}
+    // Object {x: 0.5, y: 0.4, r: 0.1} Object {x: 0.5, y: 0.4448, r: 0}
+    const x = to.x - from.x;
+    const y = to.y - from.y;
+    const angle = Math.acos(x / Math.sqrt(x * x + y * y));
+    const direction = (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
+    return direction;
+  },
 };
 
 export default VectorMath;

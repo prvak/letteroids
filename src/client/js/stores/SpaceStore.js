@@ -351,6 +351,7 @@ class SpaceStore extends EventEmitter {
                 r: (component.get("position").get("r") + asteroidPosition.get("r")) % 1.0,
               };
               const force = 0.1;
+              VectorMath.direction(asteroidPosition.toJS(), shotPosition.toJS());
               const direction = index / array.size;
               const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
               this.addAsteroid(position, speed, hull);

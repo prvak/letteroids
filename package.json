@@ -6,7 +6,8 @@
   "scripts": {
     "start": "babel-node src/index.js",
     "build": "browserify src/client/js/main.js -t babelify --outfile src/client/js/bundle.js",
-    "lint": "eslint src/"
+    "lint": "eslint src/",
+    "test": "mocha --compilers js:babel-register --recursive test/"
   },
   "author": "Prvaak",
   "license": "MIT",
@@ -16,8 +17,11 @@
     "babel-preset-react": "^6.5.0",
     "babelify": "^7.3.0",
     "browserify": "^13.0.0",
+    "chai": "^3.5.0",
+    "chai-shallow-deep-equal": "^1.4.0",
     "express": "^4.13.4",
     "immutable": "^3.8.1",
+    "mocha": "^2.4.5",
     "react": "^15.0.2",
     "react-dom": "^15.0.2"
   },
