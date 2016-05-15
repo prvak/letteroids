@@ -8,7 +8,7 @@ const VectorMath = {
    * @param {object} speed Initial speed of an object {x, y, r}.
    * @param {object} acceleration Acceleration of the object {x, y, r}.
    * @param {number} duration How long has the object traveled.
-   * @return {object} Returns position of the object after specified time.
+   * @return {object} Returns position of the object after specified time {x, y, r}.
    */
   currentPosition: (position, speed, acceleration, duration) => {
     const currentPosition = {};
@@ -37,7 +37,7 @@ const VectorMath = {
    * @param {object} speed Initial speed of an object {x, y, r}.
    * @param {object} acceleration Acceleration of the object {x, y, r}.
    * @param {number} duration How long has the object traveled.
-   * @return {object} Returns speed of the object after specified time.
+   * @return {object} Returns speed of the object after specified time {x, y, r}.
    */
   currentSpeed: (speed, acceleration, duration) => {
     const t = duration;
@@ -51,6 +51,24 @@ const VectorMath = {
       currentSpeed[dimension] = u;
     });
     return currentSpeed;
+  },
+
+  /**
+   * Apply given force in given direction to an object that moves with given
+   * speed.
+   *
+   * @param {object} speed Current speed of the object {x, y, r}.
+   * @param {number} direction Direction in which to apply the force.
+   * @param {number} force How fast should the object move in the new direction.
+   */
+  applyForce: (speed, direction, force) => {
+    const angle = direction * 2 * Math.PI;
+    const newSpeed = {
+      x: force * Math.sin(angle) + speed.x,
+      y: -force * Math.cos(angle) + speed.y,
+      r: speed.r,
+    };
+    return newSpeed;
   },
 };
 

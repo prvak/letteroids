@@ -254,12 +254,7 @@ class SpaceStore extends EventEmitter {
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
 
     // Shoot!
-    const angle = currentPosition.r * 2 * Math.PI;
-    const shotSpeed = {
-      x: force * Math.sin(angle) + currentSpeed.x,
-      y: -force * Math.cos(angle) + currentSpeed.y,
-      r: 0.0,
-    };
+    const shotSpeed = VectorMath.applyForce(currentSpeed, currentPosition.r, force);
     this.addShot(currentPosition, shotSpeed, ttl);
   }
 
@@ -329,7 +324,7 @@ class SpaceStore extends EventEmitter {
           const components = asteroid.get("hull").get("components");
           if (components.size > 1) {
             // The asteroid is big enough to be split.
-            components.forEach((component) => {
+            components.forEach((component, index, array) => {
               const subcomponents = component.get("components");
               const componentSize = component.get("size");
               let hull = null;
@@ -355,7 +350,9 @@ class SpaceStore extends EventEmitter {
                 y: (x * Math.sin(angle) + y * Math.cos(angle)) + asteroidPosition.get("y"),
                 r: (component.get("position").get("r") + asteroidPosition.get("r")) % 1.0,
               };
-              const speed = asteroid.get("speed").toJS();
+              const force = 0.1;
+              const direction = index / array.size;
+              const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
               this.addAsteroid(position, speed, hull);
             });
           }
