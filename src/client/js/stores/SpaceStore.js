@@ -4,9 +4,12 @@ import Immutable from "immutable";
 import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
 import VectorMath from "../VectorMath";
+import Random from "../Random";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
+const random = new Random();
+const ASTEROID_SYMBOLS = ["@", "#", "$"];
 
 // All objects indexed by object ID.
 let _ships = new Immutable.Map({});
@@ -86,67 +89,50 @@ class SpaceStore extends EventEmitter {
       speed = { x: 0.0, y: 0.0, r: 0.0 };
     }
     if (!hull) {
+      const depth = 3;
+      const baseSize = 0.03;
       hull = {
-        size: 0.09,
-        components: [
-          {
-            size: 0.06,
-            position: { x: 0.6, y: 0.4, r: 0.2 },
-            components: [
-              {
-                symbol: "@",
-                position: { x: 0.3, y: 0.4, r: 0.2 },
-                size: 0.03,
-              },
-              {
-                symbol: "$",
-                position: { x: 0.6, y: 0.7, r: 0.7 },
-                size: 0.03,
-              },
-              {
-                symbol: "%",
-                position: { x: 0.3, y: 0.6, r: 0.2 },
-                size: 0.03,
-              },
-              {
-                symbol: "H",
-                position: { x: 0.6, y: 0.3, r: 0.4 },
-                size: 0.03,
-              },
-            ],
-          },
-          {
-            size: 0.06,
-            position: { x: 0.4, y: 0.6, r: 0.2 },
-            components: [
-              {
-                symbol: "@",
-                position: { x: 0.3, y: 0.4, r: 0.2 },
-                size: 0.03,
-              },
-              {
-                symbol: "$",
-                position: { x: 0.6, y: 0.7, r: 0.7 },
-                size: 0.03,
-              },
-              {
-                symbol: "%",
-                position: { x: 0.3, y: 0.6, r: 0.2 },
-                size: 0.03,
-              },
-              {
-                symbol: "H",
-                position: { x: 0.6, y: 0.3, r: 0.4 },
-                size: 0.03,
-              },
-            ],
-          },
-        ],
+        size: baseSize * Math.pow(2, depth),
+        components: this._generateAsteroidComponents(depth, baseSize),
       };
     }
     const id = `asteroid_${_nextObjectId++}`;
     const object = this._createObject(now, id, position, speed, 0, hull);
     _asteroids = _asteroids.set(id, object);
+  }
+
+  _generateAsteroidComponents(depth, baseSize) {
+    const count = 4;
+    const generatePosition = (index) => {
+      const rotation = random.random();
+      let position = null;
+      if (index === 0) {
+        position = { x: 0.25, y: 0.5, r: rotation };
+      } else if (index === 1) {
+        position = { x: 0.75, y: 0.5, r: rotation };
+      } else if (index === 2) {
+        position = { x: 0.5, y: 0.75, r: rotation };
+      } else if (index === 3) {
+        position = { x: 0.5, y: 0.25, r: rotation };
+      }
+      return position;
+    };
+
+    const components = [];
+    for (let i = 0; i < count; i++) {
+      const position = generatePosition(i);
+      if (depth === 1) {
+        const symbol = random.choice(ASTEROID_SYMBOLS);
+        // Scale 0.8 - 1.2 of base size.
+        const size = baseSize * (random.random() * 0.4 + 0.8);
+        components.push({ symbol, position, size });
+      } else {
+        const subcomponents = this._generateAsteroidComponents(depth - 1, baseSize);
+        const size = baseSize * Math.pow(2, depth - 1);
+        components.push({ components: subcomponents, position, size });
+      }
+    }
+    return components;
   }
 
   addShot(now, position, speed, ttl) {
