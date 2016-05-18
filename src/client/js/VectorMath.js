@@ -1,5 +1,8 @@
 
 const VectorMath = {
+  /** Numbers that differ less than this amount are considered to be equal. */
+  TOLERANCE: 0.0000000001,
+
   /**
    * Compute current position of an object given its initial possition,
    * initial speed, acceleration and duration.
@@ -81,12 +84,19 @@ const VectorMath = {
   direction: (from, to) => {
     const x = to.x - from.x;
     const y = to.y - from.y;
-    let angle = Math.acos(x / Math.sqrt(x * x + y * y));
+    const distance = Math.sqrt(x * x + y * y);
+    let angle = Math.acos(x / distance);
     if (y < 0) {
       angle = 2 * Math.PI - angle;
     }
-    const direction = (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
-    return direction;
+    return (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
+  },
+
+  /**
+   * Returns true if the 'value' is within TOLERANCE range around the 'to'.
+   */
+  isCloseTo(value, to) {
+    return value >= to - VectorMath.TOLERANCE && value <= to + VectorMath.TOLERANCE;
   },
 };
 

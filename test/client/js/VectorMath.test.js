@@ -128,5 +128,28 @@ describe("VectorMath", () => {
       const d2 = VectorMath.direction(to, from);
       equalsWithin(d1, (d2 + 0.5) % 1.0);
     });
+    it("direction from a point to itself should return NaN", () => {
+      const from = { x: 0.4, y: 0.4 };
+      const to = { x: 0.4, y: 0.4 };
+      const d = VectorMath.direction(from, to);
+      d.should.be.NaN;
+    });
+  });
+  describe("isCloseTo", () => {
+    it("should return true for number a bit smaller", () => {
+      VectorMath.isCloseTo(1.1, 1.0999999999999999).should.be.true;
+    });
+    it("should return true for number a bit larger", () => {
+      const result = VectorMath.isCloseTo(1.1, 1.1000000000001);
+      result.should.be.true;
+    });
+    it("should return false for number that is more than 'TOLERANCE' smaller", () => {
+      const result = VectorMath.isCloseTo(1.1, 1.1 - VectorMath.TOLERANCE - 0.000000000001);
+      result.should.be.false;
+    });
+    it("should return false for number that is more than 'TOLERANCE' larger", () => {
+      const result = VectorMath.isCloseTo(1.1, 1.1 + VectorMath.TOLERANCE + 0.000000000001);
+      result.should.be.false;
+    });
   });
 });

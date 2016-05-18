@@ -351,8 +351,11 @@ class SpaceStore extends EventEmitter {
                 r: (component.get("position").get("r") + asteroidPosition.get("r")) % 1.0,
               };
               const force = 0.1;
-              VectorMath.direction(asteroidPosition.toJS(), shotPosition.toJS());
-              const direction = index / array.size;
+              let direction = VectorMath.direction(asteroidPosition.toJS(), position);
+              if (isNaN(direction)) {
+                console.log("Warning: Direction is 'NaN'. Replacing with '0.0'.");
+                direction = 0.0;
+              }
               const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
               this.addAsteroid(position, speed, hull);
             });
