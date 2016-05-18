@@ -12,7 +12,7 @@ const TOLERANCE = 0.0000000001;
 function equalsDeepWithin(expected, actual, tolerance = TOLERANCE) {
   Object.keys(expected).forEach((key) => {
     const expectedValue = expected[key];
-    const actualValue = actual[key]
+    const actualValue = actual[key];
     actualValue.should.be.within(expectedValue - tolerance, expectedValue + tolerance,
       `At path "/${key}"`);
   });

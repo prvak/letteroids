@@ -3,7 +3,6 @@ import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
-import HtmlUtils from "../HtmlUtils";
 import VectorMath from "../VectorMath";
 
 const EventEmitter = events.EventEmitter;
@@ -62,7 +61,7 @@ class SpaceStore extends EventEmitter {
     this.removeListener(CHANGE_EVENT, callback);
   }
 
-  addShip(position) {
+  addShip(now, position) {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
     const hull = {
@@ -75,12 +74,12 @@ class SpaceStore extends EventEmitter {
         },
       ],
     };
-    const object = this._createObject(id, position, speed, 0, hull);
+    const object = this._createObject(now, id, position, speed, 0, hull);
     _ships = _ships.set(id, object);
     _shipId = id;
   }
 
-  addAsteroid(position, defaultSpeed, defaultHull) {
+  addAsteroid(now, position, defaultSpeed, defaultHull) {
     let speed = defaultSpeed;
     let hull = defaultHull;
     if (!speed) {
@@ -146,11 +145,11 @@ class SpaceStore extends EventEmitter {
       };
     }
     const id = `asteroid_${_nextObjectId++}`;
-    const object = this._createObject(id, position, speed, 0, hull);
+    const object = this._createObject(now, id, position, speed, 0, hull);
     _asteroids = _asteroids.set(id, object);
   }
 
-  addShot(position, speed, ttl) {
+  addShot(now, position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
     const hull = {
       size: 0.006,
@@ -162,16 +161,16 @@ class SpaceStore extends EventEmitter {
         },
       ],
     };
-    const object = this._createObject(id, position, speed, ttl, hull);
+    const object = this._createObject(now, id, position, speed, ttl, hull);
     _shots = _shots.set(id, object);
   }
 
-  _createObject(id, position, speed, ttl, hull) {
+  _createObject(now, id, position, speed, ttl, hull) {
     const acceleration = { x: 0, y: 0, r: 0 };
-    const expiresAt = ttl ? this._getTimestamp() + ttl : 0;
+    const expiresAt = ttl ? now + ttl : 0;
     const object = Immutable.fromJS({
       id,
-      ts: this._getTimestamp(),
+      ts: now,
       initialPosition: position,
       initialSpeed: speed,
       position,
@@ -183,9 +182,8 @@ class SpaceStore extends EventEmitter {
     return object;
   }
 
-  rotateShip(shipId, rotationSpeed) {
+  rotateShip(now, shipId, rotationSpeed) {
     let object = _ships.get(shipId);
-    const now = this._getTimestamp();
     const ts = object.get("ts");
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
@@ -207,9 +205,8 @@ class SpaceStore extends EventEmitter {
     _ships = _ships.set(shipId, object);
   }
 
-  accelerateShip(shipId, force) {
+  accelerateShip(now, shipId, force) {
     let object = _ships.get(shipId);
-    const now = this._getTimestamp();
     const ts = object.get("ts");
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
@@ -238,9 +235,8 @@ class SpaceStore extends EventEmitter {
     _ships = _ships.set(shipId, object);
   }
 
-  shoot(shipId, force, ttl) {
+  shoot(now, shipId, force, ttl) {
     const object = _ships.get(shipId);
-    const now = this._getTimestamp();
     const ts = object.get("ts");
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
@@ -255,7 +251,7 @@ class SpaceStore extends EventEmitter {
 
     // Shoot!
     const shotSpeed = VectorMath.applyForce(currentSpeed, currentPosition.r, force);
-    this.addShot(currentPosition, shotSpeed, ttl);
+    this.addShot(now, currentPosition, shotSpeed, ttl);
   }
 
   _resetTimestamps(now) {
@@ -300,8 +296,7 @@ class SpaceStore extends EventEmitter {
     _shots = _shots.withMutations(update);
   }
 
-  handleTick() {
-    const now = this._getTimestamp();
+  handleTick(now) {
     if (_lastTickTimestamp === null) {
       this._resetTimestamps(now);
     } else {
@@ -324,7 +319,7 @@ class SpaceStore extends EventEmitter {
           const components = asteroid.get("hull").get("components");
           if (components.size > 1) {
             // The asteroid is big enough to be split.
-            components.forEach((component, index, array) => {
+            components.forEach((component) => {
               const subcomponents = component.get("components");
               const componentSize = component.get("size");
               let hull = null;
@@ -357,7 +352,7 @@ class SpaceStore extends EventEmitter {
                 direction = 0.0;
               }
               const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
-              this.addAsteroid(position, speed, hull);
+              this.addAsteroid(now, position, speed, hull);
             });
           }
           return true;
@@ -367,37 +362,33 @@ class SpaceStore extends EventEmitter {
     });
     _lastTickTimestamp = now;
   }
-
-  _getTimestamp() {
-    return HtmlUtils.now();
-  }
 }
 
 const store = new SpaceStore();
-store.addShip({ x: 0.5, y: 0.5, r: 0.0 });
-store.addAsteroid({ x: 0.5, y: 0.4, r: 0.1 });
+store.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
+store.addAsteroid(0, { x: 0.5, y: 0.4, r: 0.1 });
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
   switch (action.actionType) {
     case SpaceConstants.OBJECTS_ADD_ASTEROID:
-      store.addAsteroid(action.position, action.speed);
+      store.addAsteroid(action.now, action.position, action.speed);
       store.emitChange();
       break;
     case SpaceConstants.OBJECTS_ROTATE_SHIP:
-      store.rotateShip(_shipId, action.rotationChange);
+      store.rotateShip(action.now, _shipId, action.rotationChange);
       store.emitChange();
       break;
     case SpaceConstants.OBJECTS_ACCELERATE_SHIP:
-      store.accelerateShip(_shipId, action.force);
+      store.accelerateShip(action.now, _shipId, action.force);
       store.emitChange();
       break;
     case SpaceConstants.OBJECTS_SHOOT:
-      store.shoot(_shipId, action.force, action.ttl);
+      store.shoot(action.now, _shipId, action.force, action.ttl);
       store.emitChange();
       break;
     case SpaceConstants.OBJECTS_TICK:
-      store.handleTick();
+      store.handleTick(action.now);
       store.emitChange();
       break;
     default:

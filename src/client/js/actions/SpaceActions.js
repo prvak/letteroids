@@ -2,37 +2,42 @@ import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
 
 const SpaceActions = {
-  addAsteroid: (position, speed) => {
+  addAsteroid: (now, position, speed) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.OBJECTS_ADD_ASTEROID,
+      now,
       position,
       speed,
     });
   },
-  rotateShip: (objectId, rotationChange) => {
+  rotateShip: (now, objectId, rotationChange) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.OBJECTS_ROTATE_SHIP,
+      now,
       objectId,
       rotationChange,
     });
   },
-  accelerateShip: (objectId, force) => {
+  accelerateShip: (now, objectId, force) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.OBJECTS_ACCELERATE_SHIP,
+      now,
       objectId,
       force,
     });
   },
-  shoot: (force, ttl) => {
+  shoot: (now, force, ttl) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.OBJECTS_SHOOT,
+      now,
       force,
       ttl,
     });
   },
-  nextTick: () => {
+  nextTick: (now) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.OBJECTS_TICK,
+      now,
     });
   },
 };

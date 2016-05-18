@@ -1,7 +1,9 @@
 import React from "react";
+
 import objectsStore from "../stores/SpaceStore";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceObject from "../components/SpaceObject.react";
+import HtmlUtils from "../HtmlUtils";
 
 class Space extends React.Component {
   constructor() {
@@ -11,9 +13,10 @@ class Space extends React.Component {
     };
 
     this._onClick = (event) => {
+      const now = HtmlUtils.now();
       const position = this._relativeMousePosition(event);
       position.r = 0; // degrees
-      SpaceActions.addAsteroid(position);
+      SpaceActions.addAsteroid(now, position);
     };
     this._onChange = () => {
       return {

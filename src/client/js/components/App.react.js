@@ -33,20 +33,20 @@ class App extends React.Component {
       this.setState(getAppState());
     };
     this._onKeyDown = (event) => {
+      const now = HtmlUtils.now();
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(shipId, -SHIP_ROTATION_SPEED);
+          SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(shipId, SHIP_ROTATION_SPEED);
+          SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(shipId, SHIP_ACCELERATION);
+          SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
           break;
         case "Space":
           if (!this._shootTimer) {
-            const now = HtmlUtils.now();
             const sinceLastShot = now - this._lastShotTs;
             const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
             if (sinceLastShot >= minSinceLastShot) {
@@ -61,16 +61,17 @@ class App extends React.Component {
       }
     };
     this._onKeyUp = (event) => {
+      const now = HtmlUtils.now();
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(shipId, 0);
+          SpaceActions.rotateShip(now, shipId, 0);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(shipId, 0);
+          SpaceActions.rotateShip(now, shipId, 0);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(shipId, 0);
+          SpaceActions.accelerateShip(now, shipId, 0);
           break;
         case "Space":
           if (this._shootTimer) {
@@ -83,12 +84,14 @@ class App extends React.Component {
       }
     };
     this._onTick = () => {
-      SpaceActions.nextTick();
+      const now = HtmlUtils.now();
+      SpaceActions.nextTick(now);
     };
     this._onShoot = () => {
+      const now = HtmlUtils.now();
       this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
-      this._lastShotTs = Date.now();
-      SpaceActions.shoot(0.3, SHOT_TTL);
+      this._lastShotTs = now;
+      SpaceActions.shoot(now, 0.3, SHOT_TTL);
     };
     this._onResize = () => {
       const w = window;
