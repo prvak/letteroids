@@ -121,5 +121,12 @@ describe("VectorMath", () => {
       const d = VectorMath.direction(from, to);
       equalsWithin(d, 0.75);
     });
+    it("same points in oposite order should give oposite direction", () => {
+      const from = { x: 0.4, y: 0.5 };
+      const to = { x: 0.1, y: 0.3 };
+      const d1 = VectorMath.direction(from, to);
+      const d2 = VectorMath.direction(to, from);
+      equalsWithin(d1, (d2 + 0.5) % 1.0);
+    });
   });
 });

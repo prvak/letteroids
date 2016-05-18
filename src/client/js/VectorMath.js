@@ -71,12 +71,20 @@ const VectorMath = {
     return newSpeed;
   },
 
+  /**
+   * Get direction between two points.
+   *
+   * @param {object} from Starting point {x, y}.
+   * @param {object} to Final point {x, y}.
+   * @returns Direction in range [0;1). 0 is up, 0.25 is right, 0.5 is down, 0.75 is left.
+   */
   direction: (from, to) => {
-    // Object {x: 0.5, y: 0.4, r: 0.1} Object {x: 0.5, y: 0.4448, r: 0}
-    // Object {x: 0.5, y: 0.4, r: 0.1} Object {x: 0.5, y: 0.4448, r: 0}
     const x = to.x - from.x;
     const y = to.y - from.y;
-    const angle = Math.acos(x / Math.sqrt(x * x + y * y));
+    let angle = Math.acos(x / Math.sqrt(x * x + y * y));
+    if (y < 0) {
+      angle = 2 * Math.PI - angle;
+    }
     const direction = (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
     return direction;
   },
