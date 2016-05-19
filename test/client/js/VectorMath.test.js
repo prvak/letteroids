@@ -64,23 +64,6 @@ describe("VectorMath", () => {
       equalsDeepWithin(p, { x: 0.5, y: 0.0, r: 0.3 });
     });
   });
-  describe("isPositionNormalized", () => {
-    it("returns false for range [0;1)", () => {
-      const position = { x: 0.0, y: 0.5, r: 0.99999999 };
-      const isNormalized = VectorMath.isPositionNormalized(position);
-      isNormalized.should.be.true;
-    });
-    it("returns false for 1.0", () => {
-      const position = { x: 0.5, y: 0.5, r: 1.0 };
-      const isNormalized = VectorMath.isPositionNormalized(position);
-      isNormalized.should.be.false;
-    });
-    it("returns false for negative values", () => {
-      const position = { x: 0.5, y: -0.5, r: 0.5 };
-      const isNormalized = VectorMath.isPositionNormalized(position);
-      isNormalized.should.be.false;
-    });
-  });
   describe("currentSpeed", () => {
     it("non-accelerated object's speed should not change", () => {
       const speed = { x: 0.5, y: 0.4, r: 0.3 };
@@ -95,6 +78,20 @@ describe("VectorMath", () => {
       const duration = 6;
       const s = VectorMath.currentSpeed(speed, acceleration, duration);
       equalsDeepWithin(s, { x: 1.1, y: 1.0, r: 0.8 });
+    });
+  });
+  describe("acceleration", () => {
+    it("rotation 45 deg to the left", () => {
+      const direction = 0.875;
+      const force = 0.2;
+      const a = VectorMath.acceleration(direction, force);
+      equalsDeepWithin(a, { x: -force * Math.sqrt(2) / 2, y: -force * Math.sqrt(2) / 2, r: 0.0 });
+    });
+    it("rotation down", () => {
+      const direction = 0.5;
+      const force = 0.2;
+      const a = VectorMath.acceleration(direction, force);
+      equalsDeepWithin(a, { x: 0.0, y: force, r: 0.0 });
     });
   });
   describe("applyForce", () => {

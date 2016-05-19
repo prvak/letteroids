@@ -48,23 +48,6 @@ const VectorMath = {
   },
 
   /**
-   * Returns true if all dimensions of given position are within [0;1) range.
-   *
-   * @param {object} position Position that will be checked {x, y, r}.
-   * @returns True if values x, y and r of given position are in range [0;1).
-   */
-  isPositionNormalized: (position) => {
-    let isNormalized = true;
-    ["x", "y", "r"].forEach((dimension) => {
-      const p = position[dimension];
-      if (p < 0.0 || p >= 1.0) {
-        isNormalized = false;
-      }
-    });
-    return isNormalized;
-  },
-
-  /**
    * Compute current speed of an object given its initial speed,
    * and acceleration.
    *
@@ -88,6 +71,23 @@ const VectorMath = {
   },
 
   /**
+   * Compute acceleration vector based on direction and force.
+   *
+   * @param {number} direction Direction in range [0;1).
+   * @param {number} force Applied force.
+   * @returns Acceleration vector {x, y, r}. The 'r' part is always 0.
+   */
+  acceleration: (direction, force) => {
+    const angle = VectorMath._directionToAngle(direction);
+    const acceleration = {
+      x: force * Math.sin(angle),
+      y: -force * Math.cos(angle),
+      r: 0.0,
+    };
+    return acceleration;
+  },
+
+  /**
    * Apply given force in given direction to an object that moves with given
    * speed.
    *
@@ -96,12 +96,8 @@ const VectorMath = {
    * @param {number} force How fast should the object move in the new direction.
    */
   applyForce: (speed, direction, force) => {
-    const angle = direction * 2 * Math.PI;
-    const newSpeed = {
-      x: force * Math.sin(angle) + speed.x,
-      y: -force * Math.cos(angle) + speed.y,
-      r: speed.r,
-    };
+    const acceleration = VectorMath.acceleration(direction, force);
+    const newSpeed = VectorMath.currentSpeed(speed, acceleration, 1);
     return newSpeed;
   },
 
@@ -128,6 +124,10 @@ const VectorMath = {
    */
   isCloseTo(value, to) {
     return value >= to - VectorMath.TOLERANCE && value <= to + VectorMath.TOLERANCE;
+  },
+
+  _directionToAngle(direction) {
+    return direction * 2 * Math.PI;
   },
 };
 

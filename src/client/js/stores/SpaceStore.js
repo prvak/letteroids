@@ -173,7 +173,7 @@ class SpaceStore extends EventEmitter {
   }
 
   _createObject(now, id, position, speed, hull, isNew, ttl) {
-    const acceleration = { x: 0, y: 0, r: 0 };
+    const force = 0.0;
     const expiresAt = ttl ? now + ttl : 0;
     const object = Immutable.fromJS({
       id,
@@ -182,7 +182,7 @@ class SpaceStore extends EventEmitter {
       initialSpeed: speed,
       position,
       speed,
-      acceleration,
+      force,
       expiresAt,
       hull,
       isNew,
@@ -196,8 +196,9 @@ class SpaceStore extends EventEmitter {
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
     const position = object.get("initialPosition").toJS();
-    const acceleration = object.get("acceleration").toJS();
+    const force = object.get("force");
 
+    const acceleration = VectorMath.acceleration(position.r, force);
     const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
     const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
@@ -220,27 +221,20 @@ class SpaceStore extends EventEmitter {
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
     const position = object.get("initialPosition").toJS();
-    const acceleration = object.get("acceleration").toJS();
+    const originalForce = object.get("force");
 
+    const acceleration = VectorMath.acceleration(position.r, originalForce);
     const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
     const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
-    const angle = currentPosition.r * 2 * Math.PI;
-    console.log(currentPosition.r);
-    const currentAcceleration = {
-      x: force * Math.sin(angle),
-      y: -force * Math.cos(angle),
-      r: 0.0,
-    };
     object = object.withMutations((o) => {
       const p = new Immutable.Map(currentPosition);
       const s = new Immutable.Map(currentSpeed);
-      const a = new Immutable.Map(currentAcceleration);
       o.set("initialPosition", p);
       o.set("position", p);
       o.set("initialSpeed", s);
       o.set("speed", s);
-      o.set("acceleration", a);
+      o.set("force", force);
       o.set("ts", now);
     });
     _ships = _ships.set(shipId, object);
@@ -252,11 +246,12 @@ class SpaceStore extends EventEmitter {
     const duration = (now - ts) / 1000;
     const speed = object.get("initialSpeed").toJS();
     const position = object.get("initialPosition").toJS();
-    const acceleration = object.get("acceleration").toJS();
+    const originalForce = object.get("force");
 
     // Compute current position so we know from where the shot is actually fired.
     // Also compute current speed so the shot is fired with speed relative to
     // ships speed.
+    const acceleration = VectorMath.acceleration(position.r, originalForce);
     const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
     const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
@@ -291,8 +286,9 @@ class SpaceStore extends EventEmitter {
           const duration = (now - ts) / 1000;
           const speed = object.get("initialSpeed").toJS();
           const position = object.get("initialPosition").toJS();
-          const acceleration = object.get("acceleration").toJS();
+          const force = object.get("force");
 
+          const acceleration = VectorMath.acceleration(position.r, force);
           const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
           let currentPosition = rawPosition;
           let isNew = object.get("isNew");
