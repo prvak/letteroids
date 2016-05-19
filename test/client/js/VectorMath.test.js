@@ -109,6 +109,24 @@ describe("VectorMath", () => {
       const a = VectorMath.acceleration(direction, force);
       equalsDeepWithin(a, { x: 0.0, y: force, r: 0.0 });
     });
+    it("rotation right", () => {
+      const direction = 0.25;
+      const force = 0.2;
+      const a = VectorMath.acceleration(direction, force);
+      equalsDeepWithin(a, { x: force, y: 0.0, r: 0.0 });
+    });
+    it("rotation left", () => {
+      const direction = 0.75;
+      const force = 0.2;
+      const a = VectorMath.acceleration(direction, force);
+      equalsDeepWithin(a, { x: -force, y: 0.0, r: 0.0 });
+    });
+    it("rotation up", () => {
+      const direction = 0.0;
+      const force = 0.2;
+      const a = VectorMath.acceleration(direction, force);
+      equalsDeepWithin(a, { x: 0.0, y: -force, r: 0.0 });
+    });
   });
   describe("applyForce", () => {
     it("object should move up for direction 0.0", () => {
