@@ -82,7 +82,7 @@ class SpaceStore extends EventEmitter {
     _shipId = id;
   }
 
-  addAsteroid(now, scale) {
+  addAsteroid(now, scale = 3) {
     const baseSize = 0.04;
     const startingConditions = [
       {
@@ -226,6 +226,7 @@ class SpaceStore extends EventEmitter {
     const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
     const angle = currentPosition.r * 2 * Math.PI;
+    console.log(currentPosition.r);
     const currentAcceleration = {
       x: force * Math.sin(angle),
       y: -force * Math.cos(angle),
@@ -395,7 +396,7 @@ store.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
 AppDispatcher.register((action) => {
   switch (action.actionType) {
     case SpaceConstants.OBJECTS_ADD_ASTEROID:
-      store.addAsteroid(action.now, action.position, action.speed);
+      store.addAsteroid(action.now);
       store.emitChange();
       break;
     case SpaceConstants.OBJECTS_ROTATE_SHIP:
