@@ -56,6 +56,9 @@ class App extends React.Component {
             }
           }
           break;
+        case "KeyA":
+          SpaceActions.addAsteroid(now);
+          break;
         default:
           break;
       }

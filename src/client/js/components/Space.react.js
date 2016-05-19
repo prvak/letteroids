@@ -16,7 +16,7 @@ class Space extends React.Component {
       const now = HtmlUtils.now();
       const position = this._relativeMousePosition(event);
       position.r = 0; // degrees
-      SpaceActions.addAsteroid(now, position);
+      SpaceActions.addAsteroid(now);
     };
     this._onChange = () => {
       return {
@@ -56,6 +56,7 @@ class Space extends React.Component {
     return (<SpaceObject
       position={object.get("position")}
       hull={object.get("hull")}
+      addShadows={!object.get("isNew")}
       key={object.get("id")}
     />);
   }

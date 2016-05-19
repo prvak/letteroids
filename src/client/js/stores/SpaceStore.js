@@ -77,27 +77,48 @@ class SpaceStore extends EventEmitter {
         },
       ],
     };
-    const object = this._createObject(now, id, position, speed, 0, hull);
+    const object = this._createObject(now, id, position, speed, hull, false, 0);
     _ships = _ships.set(id, object);
     _shipId = id;
   }
 
-  addAsteroid(now, position, defaultSpeed, defaultHull) {
-    let speed = defaultSpeed;
-    let hull = defaultHull;
-    if (!speed) {
-      speed = { x: 0.0, y: 0.0, r: 0.0 };
-    }
-    if (!hull) {
-      const depth = 3;
-      const baseSize = 0.03;
-      hull = {
-        size: baseSize * Math.pow(2, depth),
-        components: this._generateAsteroidComponents(depth, baseSize),
-      };
-    }
+  addAsteroid(now, scale) {
+    const baseSize = 0.04;
+    const startingConditions = [
+      {
+        position: { x: 0.5, y: 1.2, r: 0.0 },
+        direction: 0.0,
+      },
+      {
+        position: { x: -0.2, y: 0.5, r: 0.0 },
+        direction: 0.25,
+      },
+      {
+        position: { x: 0.5, y: -0.2, r: 0.0 },
+        direction: 0.5,
+      },
+      {
+        position: { x: 1.2, y: 0.5, r: 0.0 },
+        direction: 0.75,
+      },
+    ];
+
+    const startingCondition = random.choice(startingConditions);
+    const position = startingCondition.position;
+    const direction = startingCondition.direction + 0.05 * (random.random() - 0.5);
+    const rotationSpeed = (random.random() - 0.5) * 0.1;
+    const force = 0.3 / scale;
+    const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
+    const hull = {
+      size: baseSize * Math.pow(2, scale),
+      components: this._generateAsteroidComponents(scale, baseSize),
+    };
+    this._addAsteroid(now, position, speed, hull, true);
+  }
+
+  _addAsteroid(now, position, speed, hull, isNew) {
     const id = `asteroid_${_nextObjectId++}`;
-    const object = this._createObject(now, id, position, speed, 0, hull);
+    const object = this._createObject(now, id, position, speed, hull, isNew, 0);
     _asteroids = _asteroids.set(id, object);
   }
 
@@ -147,11 +168,11 @@ class SpaceStore extends EventEmitter {
         },
       ],
     };
-    const object = this._createObject(now, id, position, speed, ttl, hull);
+    const object = this._createObject(now, id, position, speed, hull, true, ttl);
     _shots = _shots.set(id, object);
   }
 
-  _createObject(now, id, position, speed, ttl, hull) {
+  _createObject(now, id, position, speed, hull, isNew, ttl) {
     const acceleration = { x: 0, y: 0, r: 0 };
     const expiresAt = ttl ? now + ttl : 0;
     const object = Immutable.fromJS({
@@ -164,6 +185,7 @@ class SpaceStore extends EventEmitter {
       acceleration,
       expiresAt,
       hull,
+      isNew,
     });
     return object;
   }
@@ -176,7 +198,8 @@ class SpaceStore extends EventEmitter {
     const position = object.get("initialPosition").toJS();
     const acceleration = object.get("acceleration").toJS();
 
-    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
     currentSpeed.r = rotationSpeed;
     object = object.withMutations((o) => {
@@ -199,7 +222,8 @@ class SpaceStore extends EventEmitter {
     const position = object.get("initialPosition").toJS();
     const acceleration = object.get("acceleration").toJS();
 
-    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
     const angle = currentPosition.r * 2 * Math.PI;
     const currentAcceleration = {
@@ -232,7 +256,8 @@ class SpaceStore extends EventEmitter {
     // Compute current position so we know from where the shot is actually fired.
     // Also compute current speed so the shot is fired with speed relative to
     // ships speed.
-    const currentPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+    const currentPosition = VectorMath.normalizePosition(rawPosition);
     const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
 
     // Shoot!
@@ -267,12 +292,25 @@ class SpaceStore extends EventEmitter {
           const position = object.get("initialPosition").toJS();
           const acceleration = object.get("acceleration").toJS();
 
-          const currentPosition = VectorMath.currentPosition(
-            position, speed, acceleration, duration);
+          const rawPosition = VectorMath.currentPosition(position, speed, acceleration, duration);
+          let currentPosition = rawPosition;
+          let isNew = object.get("isNew");
+          if (isNew) {
+            const size = object.get("hull").get("size") / 2;
+            const x = rawPosition.x;
+            const y = rawPosition.y;
+            // New objects are allowed to be behind the edge of the Space. Once such object
+            // gets from behind the edge its position will be normalized so it cannot
+            // get behind the edge again.
+            isNew = x - size < 0.0 || x + size >= 1.0 || y - size <= 0.0 || y + size > 1.0;
+          } else {
+            currentPosition = VectorMath.normalizePosition(rawPosition);
+          }
           const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
           objects.set(objectId, object.withMutations((o) => {
             o.set("position", new Immutable.Map(currentPosition));
             o.set("speed", new Immutable.Map(currentSpeed));
+            o.set("isNew", isNew);
           }));
         }
       });
@@ -338,7 +376,7 @@ class SpaceStore extends EventEmitter {
                 direction = 0.0;
               }
               const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
-              this.addAsteroid(now, position, speed, hull);
+              this._addAsteroid(now, position, speed, hull, false);
             });
           }
           return true;
@@ -352,7 +390,6 @@ class SpaceStore extends EventEmitter {
 
 const store = new SpaceStore();
 store.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
-store.addAsteroid(0, { x: 0.5, y: 0.4, r: 0.1 });
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {

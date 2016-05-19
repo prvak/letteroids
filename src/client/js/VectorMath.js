@@ -23,14 +23,45 @@ const VectorMath = {
       // Compute distance traveled by a constantly accelerated object.
       // s = a*(t^2)/2 + v*t
       const s = a * t * t / 2 + v * t;
-      // Normalize to interval [0:1).
-      let newP = (p + s) % 1.0;
-      if (newP < 0) {
-        newP += 1.0;
-      }
-      currentPosition[dimension] = newP;
+      currentPosition[dimension] = p + s;
     });
     return currentPosition;
+  },
+
+  /**
+   * Normalize position values to interval [0;1).
+   *
+   * @param {object} position Position that will be normalized {x, y, r}.
+   * @returns Position with values x, y and r normalized to interval [0;1).
+   */
+  normalizePosition: (position) => {
+    const normalizedPosition = {};
+    ["x", "y", "r"].forEach((dimension) => {
+      let p = position[dimension];
+      p = p % 1.0;
+      if (p < 0) {
+        p += 1.0;
+      }
+      normalizedPosition[dimension] = p;
+    });
+    return normalizedPosition;
+  },
+
+  /**
+   * Returns true if all dimensions of given position are within [0;1) range.
+   *
+   * @param {object} position Position that will be checked {x, y, r}.
+   * @returns True if values x, y and r of given position are in range [0;1).
+   */
+  isPositionNormalized: (position) => {
+    let isNormalized = true;
+    ["x", "y", "r"].forEach((dimension) => {
+      const p = position[dimension];
+      if (p < 0.0 || p >= 1.0) {
+        isNormalized = false;
+      }
+    });
+    return isNormalized;
   },
 
   /**

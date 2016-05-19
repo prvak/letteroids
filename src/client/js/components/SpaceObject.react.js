@@ -41,18 +41,20 @@ class SpaceObject extends React.Component {
 
     // Add real object.
     objects.push(this._createObject(components, size, x, y, rotation, "real"));
-    // Add shadow objects for each edge that the real object overlaps.
-    if (x + s / 2 > 1.0) {
-      objects.push(this._createObject(components, size, x - 1.0, y, rotation, "right"));
-    }
-    if (y + s / 2 > 1.0) {
-      objects.push(this._createObject(components, size, x, y - 1.0, rotation, "bottom"));
-    }
-    if (x - s / 2 < 0.0) {
-      objects.push(this._createObject(components, size, x + 1.0, y, rotation, "left"));
-    }
-    if (y - s / 2 < 0.0) {
-      objects.push(this._createObject(components, size, x, y + 1.0, rotation, "top"));
+    if (this.props.addShadows) {
+      // Add shadow objects for each edge that the real object overlaps.
+      if (x + s / 2 > 1.0) {
+        objects.push(this._createObject(components, size, x - 1.0, y, rotation, "right"));
+      }
+      if (y + s / 2 > 1.0) {
+        objects.push(this._createObject(components, size, x, y - 1.0, rotation, "bottom"));
+      }
+      if (x - s / 2 < 0.0) {
+        objects.push(this._createObject(components, size, x + 1.0, y, rotation, "left"));
+      }
+      if (y - s / 2 < 0.0) {
+        objects.push(this._createObject(components, size, x, y + 1.0, rotation, "top"));
+      }
     }
     return <span>{objects}</span>;
   }
@@ -61,6 +63,7 @@ class SpaceObject extends React.Component {
 SpaceObject.propTypes = {
   position: React.PropTypes.object.isRequired,
   hull: React.PropTypes.object.isRequired,
+  addShadows: React.PropTypes.bool.isRequired,
 };
 
 export default SpaceObject;

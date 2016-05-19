@@ -48,13 +48,37 @@ describe("VectorMath", () => {
       const p = VectorMath.currentPosition(position, speed, acceleration, duration);
       equalsDeepWithin(p, { x: 0.2, y: 0.2, r: 0.0 });
     });
-    it("coordinates should be in range [0,1)", () => {
+    it("coordinates do not have to be in range [0,1)", () => {
       const position = { x: 0.0, y: 0.0, r: 0.0 };
       const speed = { x: 0.1, y: 0.5, r: 0.2 };
       const acceleration = { x: 0.0, y: 0.0, r: 0.0 };
       const duration = 5;
       const p = VectorMath.currentPosition(position, speed, acceleration, duration);
-      equalsDeepWithin(p, { x: 0.1 * 5, y: 0.5, r: 0.0 });
+      equalsDeepWithin(p, { x: 0.1 * 5, y: 2.5, r: 1.0 });
+    });
+  });
+  describe("normalizePosition", () => {
+    it("normalize values that are '< 0.0' or '>= 1.0' to range [0;1)", () => {
+      const position = { x: -0.5, y: 1.0, r: 1.3 };
+      const p = VectorMath.normalizePosition(position);
+      equalsDeepWithin(p, { x: 0.5, y: 0.0, r: 0.3 });
+    });
+  });
+  describe("isPositionNormalized", () => {
+    it("returns false for range [0;1)", () => {
+      const position = { x: 0.0, y: 0.5, r: 0.99999999 };
+      const isNormalized = VectorMath.isPositionNormalized(position);
+      isNormalized.should.be.true;
+    });
+    it("returns false for 1.0", () => {
+      const position = { x: 0.5, y: 0.5, r: 1.0 };
+      const isNormalized = VectorMath.isPositionNormalized(position);
+      isNormalized.should.be.false;
+    });
+    it("returns false for negative values", () => {
+      const position = { x: 0.5, y: -0.5, r: 0.5 };
+      const isNormalized = VectorMath.isPositionNormalized(position);
+      isNormalized.should.be.false;
     });
   });
   describe("currentSpeed", () => {
