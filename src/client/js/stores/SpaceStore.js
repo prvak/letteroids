@@ -325,16 +325,12 @@ class SpaceStore extends EventEmitter {
     }
 
     _shots.forEach((shot) => {
-      const shotPosition = shot.get("position");
+      const shotPosition = shot.get("position").toJS();
       const shotSize = shot.get("hull").get("size");
       _asteroids.some((asteroid) => {
-        const asteroidPosition = asteroid.get("position");
+        const asteroidPosition = asteroid.get("position").toJS();
         const asteroidSize = asteroid.get("hull").get("size");
-        const dx = asteroidPosition.get("x") - shotPosition.get("x");
-        const dy = asteroidPosition.get("y") - shotPosition.get("y");
-        const distance = Math.sqrt(dx * dx + dy * dy);
-        const collisionDistance = (asteroidSize + shotSize) / 2;
-        if (distance < collisionDistance) {
+        if (VectorMath.isCollision(shotPosition, shotSize, asteroidPosition, asteroidSize)) {
           _shots = _shots.delete(shot.get("id"));
           _asteroids = _asteroids.delete(asteroid.get("id"));
           const components = asteroid.get("hull").get("components");
@@ -360,14 +356,14 @@ class SpaceStore extends EventEmitter {
               }
               const x = (component.get("position").get("x") - 0.5) * asteroidSize;
               const y = (component.get("position").get("y") - 0.5) * asteroidSize;
-              const angle = asteroidPosition.get("r") * 2 * Math.PI;
+              const angle = asteroidPosition.r * 2 * Math.PI;
               const position = {
-                x: (x * Math.cos(angle) - y * Math.sin(angle)) + asteroidPosition.get("x"),
-                y: (x * Math.sin(angle) + y * Math.cos(angle)) + asteroidPosition.get("y"),
-                r: (component.get("position").get("r") + asteroidPosition.get("r")) % 1.0,
+                x: (x * Math.cos(angle) - y * Math.sin(angle)) + asteroidPosition.x,
+                y: (x * Math.sin(angle) + y * Math.cos(angle)) + asteroidPosition.y,
+                r: (component.get("position").get("r") + asteroidPosition.r) % 1.0,
               };
               const force = 0.1;
-              let direction = VectorMath.direction(asteroidPosition.toJS(), position);
+              let direction = VectorMath.direction(asteroidPosition, position);
               if (isNaN(direction)) {
                 console.log("Warning: Direction is 'NaN'. Replacing with '0.0'.");
                 direction = 0.0;

@@ -11,7 +11,7 @@ const VectorMath = {
    * @param {object} speed Initial speed of an object {x, y, r}.
    * @param {object} acceleration Acceleration of the object {x, y, r}.
    * @param {number} duration How long has the object traveled.
-   * @return {object} Returns position of the object after specified time {x, y, r}.
+   * @returns {object} Returns position of the object after specified time {x, y, r}.
    */
   currentPosition: (position, speed, acceleration, duration) => {
     const currentPosition = {};
@@ -117,6 +117,36 @@ const VectorMath = {
       angle = 2 * Math.PI - angle;
     }
     return (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
+  },
+
+  /**
+   * Test whether given objects are coliding. This function takes into
+   * consideration the fact that the right and left edges of the Space as well
+   * as the top and the bottom edges are connected. So if the first object is
+   * near one edge and the second object is near the opposite edge than they
+   * are treated as if they were next to each other.
+   *
+   * @param {object} position1 Position of the first object {x, y}.
+   * @param {number} size1 Diameter of the first object.
+   * @param {object} position2 Position of the second object {x, y}.
+   * @param {number} size2 Diameter of the second object.
+   * @returns True if the distance between objects is smaller than half of their sizes.
+   */
+  isCollision(position1, size1, position2, size2) {
+    const max = (size1 + size2) / 2;
+    const test = (x1, y1, x2, y2) => {
+      const dx = x1 - x2;
+      const dy = y1 - y2;
+      const d = Math.sqrt(dx * dx + dy * dy);
+      return d < max;
+    };
+    return test(position1.x, position1.y, position2.x, position2.y) ||
+      test(position1.x + 1, position1.y, position2.x, position2.y) ||
+      test(position1.x, position1.y, position2.x + 1, position2.y) ||
+      test(position1.x, position1.y + 1, position2.x, position2.y) ||
+      test(position1.x, position1.y, position2.x, position2.y + 1) ||
+      test(position1.x, position1.y, position2.x + 1, position2.y + 1) ||
+      test(position1.x + 1, position1.y + 1, position2.x, position2.y);
   },
 
   /**

@@ -156,6 +156,56 @@ describe("VectorMath", () => {
       d.should.be.NaN;
     });
   });
+  describe("isCollision", () => {
+    it("should return true for objects that are close", () => {
+      const position1 = { x: 0.4, y: 0.5 };
+      const position2 = { x: 0.6, y: 0.5 };
+      const size1 = 0.2;
+      const size2 = 0.4;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.true;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.true;
+    });
+    it("should return false for objects that far away", () => {
+      const position1 = { x: 0.5, y: 0.3 };
+      const position2 = { x: 0.5, y: 0.7 };
+      const size1 = 0.2;
+      const size2 = 0.4;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.false;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.false;
+    });
+    it("should return true for objects close to the x edge", () => {
+      const position1 = { x: 0.1, y: 0.5 };
+      const position2 = { x: 0.9, y: 0.5 };
+      const size1 = 0.2;
+      const size2 = 0.3;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.true;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.true;
+    });
+    it("should return true for objects close to the y edge", () => {
+      const position1 = { x: 0.5, y: 0.1 };
+      const position2 = { x: 0.5, y: 0.9 };
+      const size1 = 0.25;
+      const size2 = 0.25;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.true;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.true;
+    });
+    it("should return true for objects close to the x and y edge", () => {
+      const position1 = { x: 0.1, y: 0.1 };
+      const position2 = { x: 0.9, y: 0.9 };
+      const size1 = 0.2;
+      const size2 = 0.4;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.true;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.true;
+    });
+    it("should return false for objects close different edges", () => {
+      const position1 = { x: 0.1, y: 0.9 };
+      const position2 = { x: 0.9, y: 0.1 };
+      const size1 = 0.2;
+      const size2 = 0.4;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.false;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.false;
+    });
+  });
   describe("isCloseTo", () => {
     it("should return true for number a bit smaller", () => {
       VectorMath.isCloseTo(1.1, 1.0999999999999999).should.be.true;
