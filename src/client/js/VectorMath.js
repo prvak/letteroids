@@ -109,14 +109,16 @@ const VectorMath = {
    * @returns Direction in range [0;1). 0 is up, 0.25 is right, 0.5 is down, 0.75 is left.
    */
   direction: (from, to) => {
-    const x = to.x - from.x;
-    const y = to.y - from.y;
+    const x = from.x - to.x;
+    const y = from.y - to.y;
     const distance = Math.sqrt(x * x + y * y);
-    let angle = Math.acos(x / distance);
-    if (y < 0) {
+    let angle = Math.acos(y / distance);
+    if (x < 0) {
       angle = 2 * Math.PI - angle;
     }
-    return (-(angle / (2 * Math.PI)) + 1.25) % 1.0;
+    // Switch from counter clock-wise to clock-wise
+    angle = -angle + 2 * Math.PI;
+    return (angle / (2 * Math.PI)) % 1.0;
   },
 
   /**

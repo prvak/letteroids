@@ -119,7 +119,7 @@ describe("VectorMath", () => {
   });
   describe("direction", () => {
     it("up should equal 0.0", () => {
-      const from = { x: 0.0, y: 0.0 };
+      const from = { x: 0.0, y: 0.5 };
       const to = { x: 0.0, y: 0.1 };
       const d = VectorMath.direction(from, to);
       equalsWithin(d, 0.0);
@@ -132,7 +132,7 @@ describe("VectorMath", () => {
     });
     it("down should equal 0.5", () => {
       const from = { x: 0.5, y: 0.5 };
-      const to = { x: 0.5, y: 0.1 };
+      const to = { x: 0.5, y: 0.6 };
       const d = VectorMath.direction(from, to);
       equalsWithin(d, 0.5);
     });
@@ -141,6 +141,12 @@ describe("VectorMath", () => {
       const to = { x: 0.1, y: 0.5 };
       const d = VectorMath.direction(from, to);
       equalsWithin(d, 0.75);
+    });
+    it("down and right should equal 0.375", () => {
+      const from = { x: 0.5, y: 0.5 };
+      const to = { x: 0.6, y: 0.6 };
+      const d = VectorMath.direction(from, to);
+      equalsWithin(d, 0.375);
     });
     it("same points in oposite order should give oposite direction", () => {
       const from = { x: 0.4, y: 0.5 };
