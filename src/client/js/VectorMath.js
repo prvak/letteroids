@@ -136,12 +136,20 @@ const VectorMath = {
    */
   isCollision(position1, size1, position2, size2) {
     const max = (size1 + size2) / 2;
+    const isOutside = (position) => {
+      return position.x < 0 || position.x >= 1.0 || position.y < 0.0 || position.y >= 1.0;
+    };
     const test = (x1, y1, x2, y2) => {
       const dx = x1 - x2;
       const dy = y1 - y2;
       const d = Math.sqrt(dx * dx + dy * dy);
       return d < max;
     };
+    if (isOutside(position1) || isOutside(position2)) {
+      // Do just the simple test if one of the positions is outside of the Space.
+      // Without this the new asteroids would be hit before they even enter the Space.
+      return test(position1.x, position1.y, position2.x, position2.y);
+    }
     return test(position1.x, position1.y, position2.x, position2.y) ||
       test(position1.x + 1, position1.y, position2.x, position2.y) ||
       test(position1.x, position1.y, position2.x + 1, position2.y) ||

@@ -211,6 +211,22 @@ describe("VectorMath", () => {
       VectorMath.isCollision(position1, size1, position2, size2).should.be.false;
       VectorMath.isCollision(position2, size2, position1, size1).should.be.false;
     });
+    it("should return false for new objects outside the edge", () => {
+      const position1 = { x: 0.1, y: 0.1 };
+      const position2 = { x: 0.1, y: 1.1 };
+      const size1 = 0.1;
+      const size2 = 0.1;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.false;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.false;
+    });
+    it("should return true for new objects partialy outside the edge", () => {
+      const position1 = { x: 0.1, y: 0.9 };
+      const position2 = { x: 0.1, y: 1.1 };
+      const size1 = 0.2;
+      const size2 = 0.3;
+      VectorMath.isCollision(position1, size1, position2, size2).should.be.true;
+      VectorMath.isCollision(position2, size2, position1, size1).should.be.true;
+    });
   });
   describe("isCloseTo", () => {
     it("should return true for number a bit smaller", () => {
