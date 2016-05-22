@@ -38,6 +38,18 @@ const SpaceActions = {
       now,
     });
   },
+  pauseGame: (now) => {
+    AppDispatcher.dispatch({
+      actionType: SpaceConstants.GAME_PAUSE,
+      now,
+    });
+  },
+  resumeGame: (now) => {
+    AppDispatcher.dispatch({
+      actionType: SpaceConstants.GAME_RESUME,
+      now,
+    });
+  },
 };
 
 export default SpaceActions;

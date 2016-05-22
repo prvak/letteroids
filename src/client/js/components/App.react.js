@@ -13,6 +13,7 @@ function getAppState() {
     asteroids: objectsStore.getAsteroids(),
     junk: objectsStore.getJunk(),
     dimensions: objectsStore.getDimensions(),
+    isGamePaused: objectsStore.isGamePaused(),
   };
 }
 
@@ -32,22 +33,34 @@ class App extends React.Component {
     this._lastShotTs = HtmlUtils.now();
     this._onChange = () => {
       this.setState(getAppState());
+      if (this.state.isGamePaused) {
+        this._stopTickTimer();
+        this._stopShootTimer();
+      } else {
+        this._startTickTimer();
+      }
     };
     this._onKeyDown = (event) => {
       const now = HtmlUtils.now();
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
+          if (this._isGameActive()) {
+            SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
+          }
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
+          if (this._isGameActive()) {
+            SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
+          }
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
+          if (this._isGameActive()) {
+            SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
+          }
           break;
         case "Space":
-          if (!this._shootTimer) {
+          if (this._isGameActive() && !this._shootTimer) {
             const sinceLastShot = now - this._lastShotTs;
             const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
             if (sinceLastShot >= minSinceLastShot) {
@@ -60,6 +73,13 @@ class App extends React.Component {
         case "KeyA":
           SpaceActions.addAsteroid(now);
           break;
+        case "KeyP":
+          if (this.state.isGamePaused) {
+            SpaceActions.resumeGame(now);
+          } else {
+            SpaceActions.pauseGame(now);
+          }
+          break;
         default:
           break;
       }
@@ -69,18 +89,23 @@ class App extends React.Component {
       const shipId = 1;
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(now, shipId, 0);
+          if (this._isGameActive()) {
+            SpaceActions.rotateShip(now, shipId, 0);
+          }
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(now, shipId, 0);
+          if (this._isGameActive()) {
+            SpaceActions.rotateShip(now, shipId, 0);
+          }
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(now, shipId, 0);
+          if (this._isGameActive()) {
+            SpaceActions.accelerateShip(now, shipId, 0);
+          }
           break;
         case "Space":
-          if (this._shootTimer) {
-            clearTimeout(this._shootTimer);
-            this._shootTimer = null;
+          if (this._isGameActive()) {
+            this._stopShootTimer();
           }
           break;
         default:
@@ -93,7 +118,7 @@ class App extends React.Component {
     };
     this._onShoot = () => {
       const now = HtmlUtils.now();
-      this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
+      this._startShootTimer();
       this._lastShotTs = now;
       SpaceActions.shoot(now, 0.3, SHOT_TTL);
     };
@@ -114,7 +139,7 @@ class App extends React.Component {
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
     window.addEventListener("resize", this._onResize);
-    this._tickTimer = setInterval(this._onTick, 1000 / FPS);
+    this._startTickTimer();
     this._onResize();
   }
 
@@ -123,8 +148,34 @@ class App extends React.Component {
     document.removeEventListener("keydown", this._onKeyDown);
     document.removeEventListener("keyup", this._onKeyUp);
     window.removeEventListener("resize", this._onResize);
+    this._stopTickTimer();
+  }
+
+  _isGameActive() {
+    return !this.state.isGamePaused;
+  }
+
+  _startTickTimer() {
+    if (!this._tickTimer) {
+      this._tickTimer = setInterval(this._onTick, 1000 / FPS);
+    }
+  }
+
+  _stopTickTimer() {
     if (this._tickTimer) {
       clearInterval(this._tickTimer);
+      this._tickTimer = null;
+    }
+  }
+
+  _startShootTimer() {
+    this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
+  }
+
+  _stopShootTimer() {
+    if (this._shootTimer) {
+      clearTimeout(this._shootTimer);
+      this._shootTimer = null;
     }
   }
 

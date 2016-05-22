@@ -26,6 +26,8 @@ let _nextObjectId = 1;
 let _lastTickTimestamp = null;
 // There is one ship. This is its id.
 let _shipId = null;
+let _isGamePaused = false;
+
 // Current size of the space.
 const _spaceDimensions = {
   width: SpaceConstants.SPACE_SIZE,
@@ -289,7 +291,7 @@ class SpaceStore extends EventEmitter {
     _junk = _junk.withMutations(reset);
   }
 
-  _updatePositionsAndSpeeds(now) {
+  _updatePositionsAndSpeeds(now, updateInitialState = false) {
     const update = (objects) => {
       objects.forEach((object) => {
         const objectId = object.get("id");
@@ -320,9 +322,16 @@ class SpaceStore extends EventEmitter {
           }
           const currentSpeed = VectorMath.currentSpeed(speed, acceleration, duration);
           objects.set(objectId, object.withMutations((o) => {
-            o.set("position", new Immutable.Map(currentPosition));
-            o.set("speed", new Immutable.Map(currentSpeed));
+            const p = new Immutable.Map(currentPosition);
+            const s = new Immutable.Map(currentSpeed);
+            o.set("position", p);
+            o.set("speed", s);
             o.set("isNew", isNew);
+            if (updateInitialState) {
+              o.set("initialPosition", p);
+              o.set("initialSpeed", s);
+              o.set("ts", now);
+            }
           }));
         }
       });
@@ -407,6 +416,21 @@ class SpaceStore extends EventEmitter {
       this._addAsteroid(now, componentPosition, componentSpeed, componentHull, false);
     });
   }
+
+  pauseGame(now) {
+    this._updatePositionsAndSpeeds(now, true);
+    this.accelerateShip(now, _shipId, 0.0);
+    _isGamePaused = true;
+  }
+
+  resumeGame(now) {
+    this._resetTimestamps(now);
+    _isGamePaused = false;
+  }
+
+  isGamePaused() {
+    return _isGamePaused;
+  }
 }
 
 const store = new SpaceStore();
@@ -433,6 +457,14 @@ AppDispatcher.register((action) => {
       break;
     case SpaceConstants.OBJECTS_TICK:
       store.handleTick(action.now);
+      store.emitChange();
+      break;
+    case SpaceConstants.GAME_PAUSE:
+      store.pauseGame(action.now);
+      store.emitChange();
+      break;
+    case SpaceConstants.GAME_RESUME:
+      store.resumeGame(action.now);
       store.emitChange();
       break;
     default:
