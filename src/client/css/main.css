@@ -1,6 +1,6 @@
 #main {
   position: absolute;
-  background-color: #ffffff;
+  background-color: black;
   width: 100%;
   top: 0px;
   bottom: 0px;
@@ -10,7 +10,7 @@
 
 #app {
   position: absolute;
-  background-color: #fff0f0;
+  background-color: white;
   top: 0px;
   bottom: 0px;
   width: 100%;
@@ -18,7 +18,10 @@
 
 .space {
   position: absolute;
-  background-color: #f0f0ff;
+  box-sizing: border-box;
+  border: solid black 1px;
+  background-color: white;
+  color: black;
   top: 0px;
   bottom: 0px;
   left: 0px;
@@ -31,7 +34,6 @@
   position: absolute;
   text-align: center;
   vertical-align: middle;
-  background: rgba(100, 100, 100, 0.4);
   border-radius: 50%;
 }
 
@@ -39,6 +41,5 @@
   position: absolute;
   text-align: center;
   vertical-align: middle;
-  background: rgba(0, 200, 0, 0.4);
   border-radius: 50%;
 }
