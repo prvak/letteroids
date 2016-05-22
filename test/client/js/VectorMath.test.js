@@ -178,6 +178,18 @@ describe("VectorMath", () => {
       d.should.be.NaN;
     });
   });
+  describe("speedDirection", () => {
+    it("speed to bottom rigth should return direction 135 degrees", () => {
+      const speed = { x: 0.5, y: 0.5 };
+      const d = VectorMath.speedDirection(speed);
+      equalsWithin(d, 0.375);
+    });
+    it("speed to left should return direction 270 degrees", () => {
+      const speed = { x: -0.5, y: 0.0 };
+      const d = VectorMath.speedDirection(speed);
+      equalsWithin(d, 0.75);
+    });
+  });
   describe("isCollision", () => {
     it("should return true for objects that are close", () => {
       const position1 = { x: 0.4, y: 0.5 };

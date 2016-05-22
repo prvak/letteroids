@@ -10,7 +10,9 @@ const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 const random = new Random();
 const ASTEROID_SYMBOLS = ["@", "#", "$"];
-const JUNK_TTL = 2000;
+const JUNK_TTL = 500;
+const JUNK_FORCE = 0.05;
+const JUNK_ANGLE = 0.125;
 
 // All objects indexed by object ID.
 let _ships = new Immutable.Map({});
@@ -41,6 +43,10 @@ class SpaceStore extends EventEmitter {
 
   getAsteroids() {
     return _asteroids;
+  }
+
+  getJunk() {
+    return _junk;
   }
 
   /** Width and height of the space in rem units. */
@@ -124,9 +130,9 @@ class SpaceStore extends EventEmitter {
     _asteroids = _asteroids.set(id, object);
   }
 
-  _addJunk(now, position, speed, hull, ttl) {
+  _addJunk(now, position, speed, hull) {
     const id = `junk_${_nextObjectId++}`;
-    const object = this._createObject(now, id, position, speed, hull, false, ttl);
+    const object = this._createObject(now, id, position, speed, hull, false, JUNK_TTL);
     _junk = _junk.set(id, object);
   }
 
@@ -346,14 +352,19 @@ class SpaceStore extends EventEmitter {
           _shots = _shots.delete(shot.get("id"));
           _asteroids = _asteroids.delete(asteroid.get("id"));
           const components = asteroidHull.get("components");
+          const hull = asteroidHull.toJS();
+          const speed = asteroid.get("speed").toJS();
           if (components.size > 1) {
-            const asteroidSpeed = asteroid.get("speed").toJS();
-            this._splitAsteroid(now, asteroidPosition, asteroidSpeed, asteroidHull.toJS());
+            this._splitHull(now, asteroidPosition, speed, hull);
           } else {
-            // hull.clip = { x: 0.0, y: 0.0, w: 0.5, h: 1.0};
-            // this._addJunk(now, position, speed, hull, false, JUNK_TTL);
-            // hull.clip = { x: 0.5, y: 0.0, w: 0.5, h: 1.0};
-            // this._addJunk(now, position, speed, hull, false, JUNK_TTL);
+            hull.clip = "left";
+            const leftAngle = asteroidPosition.r - JUNK_ANGLE;
+            const leftSpeed = VectorMath.applyForce(speed, leftAngle, JUNK_FORCE);
+            this._addJunk(now, asteroidPosition, leftSpeed, hull);
+            hull.clip = "right";
+            const rightAngle = asteroidPosition.r + JUNK_ANGLE;
+            const rightSpeed = VectorMath.applyForce(speed, rightAngle, JUNK_FORCE);
+            this._addJunk(now, asteroidPosition, rightSpeed, hull);
           }
           return true;
         }
@@ -363,7 +374,7 @@ class SpaceStore extends EventEmitter {
     _lastTickTimestamp = now;
   }
 
-  _splitAsteroid(now, position, speed, hull) {
+  _splitHull(now, position, speed, hull) {
     // The asteroid is big enough to be split.
     hull.components.forEach((component) => {
       const subcomponents = component.components;

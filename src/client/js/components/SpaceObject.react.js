@@ -11,7 +11,16 @@ class SpaceObject extends React.Component {
     };
   }
 
-  _createObject(components, size, x, y, rotation, key) {
+  _createObject(components, size, x, y, rotation, clip, key) {
+    let c = undefined;
+    if (clip) {
+      if (clip === "left") {
+        c = `rect(0rem, ${size / 2}rem, ${size}rem, 0rem)`;
+      } else {
+        c = `rect(0rem, ${size}rem, ${size}rem, ${size / 2}rem)`;
+      }
+    }
+
     const style = {
       left: `${x * 100}%`,
       top: `${y * 100}%`,
@@ -20,6 +29,7 @@ class SpaceObject extends React.Component {
       marginTop: `${-size / 2}rem`,
       marginLeft: `${-size / 2}rem`,
       transform: `rotate(${rotation}deg)`,
+      clip: c,
     };
     return <span className="object" key={key} style={style}>{components}</span>;
   }
@@ -29,6 +39,7 @@ class SpaceObject extends React.Component {
     const x = this.props.position.get("x");
     const y = this.props.position.get("y");
     const r = this.props.position.get("r");
+    const clip = this.props.hull.get("clip");
 
     const size = s * SpaceConstants.SPACE_SIZE;
     const rotation = (r * 360) % 360; // degrees
@@ -40,20 +51,20 @@ class SpaceObject extends React.Component {
     const objects = [];
 
     // Add real object.
-    objects.push(this._createObject(components, size, x, y, rotation, "real"));
+    objects.push(this._createObject(components, size, x, y, rotation, clip, "x"));
     if (this.props.addShadows) {
       // Add shadow objects for each edge that the real object overlaps.
       if (x + s / 2 > 1.0) {
-        objects.push(this._createObject(components, size, x - 1.0, y, rotation, "right"));
+        objects.push(this._createObject(components, size, x - 1.0, y, rotation, clip, "r"));
       }
       if (y + s / 2 > 1.0) {
-        objects.push(this._createObject(components, size, x, y - 1.0, rotation, "bottom"));
+        objects.push(this._createObject(components, size, x, y - 1.0, rotation, clip, "b"));
       }
       if (x - s / 2 < 0.0) {
-        objects.push(this._createObject(components, size, x + 1.0, y, rotation, "left"));
+        objects.push(this._createObject(components, size, x + 1.0, y, rotation, clip, "l"));
       }
       if (y - s / 2 < 0.0) {
-        objects.push(this._createObject(components, size, x, y + 1.0, rotation, "top"));
+        objects.push(this._createObject(components, size, x, y + 1.0, rotation, clip, "t"));
       }
     }
     return <span>{objects}</span>;

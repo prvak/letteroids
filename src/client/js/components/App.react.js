@@ -11,6 +11,7 @@ function getAppState() {
     ships: objectsStore.getShips(),
     shots: objectsStore.getShots(),
     asteroids: objectsStore.getAsteroids(),
+    junk: objectsStore.getJunk(),
     dimensions: objectsStore.getDimensions(),
   };
 }
@@ -134,6 +135,7 @@ class App extends React.Component {
           ships={this.state.ships}
           shots={this.state.shots}
           asteroids={this.state.asteroids}
+          junk={this.state.junk}
           dimensions={this.state.dimensions}
         />
       </div>

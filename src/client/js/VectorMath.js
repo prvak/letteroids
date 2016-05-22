@@ -141,6 +141,16 @@ const VectorMath = {
   },
 
   /**
+   * Get direction of given speed.
+   *
+   * @param {object} speed Speed whose direction we want to find out.
+   * @return Direction of given speed.
+   */
+  speedDirection(speed) {
+    return VectorMath.direction({ x: 0.0, y: 0.0 }, speed);
+  },
+
+  /**
    * Test whether given objects are coliding. This function takes into
    * consideration the fact that the right and left edges of the Space as well
    * as the top and the bottom edges are connected. So if the first object is
