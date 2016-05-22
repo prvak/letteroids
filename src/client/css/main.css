@@ -32,8 +32,6 @@
 
 .object {
   position: absolute;
-  text-align: center;
-  vertical-align: middle;
   border-radius: 50%;
 }
 
