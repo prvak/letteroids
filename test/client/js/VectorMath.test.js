@@ -64,6 +64,22 @@ describe("VectorMath", () => {
       equalsDeepWithin(p, { x: 0.5, y: 0.0, r: 0.3 });
     });
   });
+  describe("absolutePosition", () => {
+    it("works for non-rotated objects", () => {
+      const position = { x: 0.5, y: 0.5, r: 0.0 };
+      const subPosition = { x: 0.0, y: 0.0, r: 0.0 };
+      const size = 0.2;
+      const p = VectorMath.absolutePosition(position, subPosition, size);
+      equalsDeepWithin(p, { x: 0.4, y: 0.4, r: 0.0 });
+    });
+    it("works for rotated objects", () => {
+      const position = { x: 0.5, y: 0.5, r: 0.25 };
+      const subPosition = { x: 0.0, y: 0.0, r: 0.1 };
+      const size = 0.4;
+      const p = VectorMath.absolutePosition(position, subPosition, size);
+      equalsDeepWithin(p, { x: 0.7, y: 0.3, r: 0.35 });
+    });
+  });
   describe("currentSpeed", () => {
     it("non-accelerated object's speed should not change", () => {
       const speed = { x: 0.5, y: 0.4, r: 0.3 };

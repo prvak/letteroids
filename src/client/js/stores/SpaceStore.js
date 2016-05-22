@@ -10,11 +10,13 @@ const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 const random = new Random();
 const ASTEROID_SYMBOLS = ["@", "#", "$"];
+const JUNK_TTL = 2000;
 
 // All objects indexed by object ID.
 let _ships = new Immutable.Map({});
 let _shots = new Immutable.Map({});
 let _asteroids = new Immutable.Map({});
+let _junk = new Immutable.Map({});
 
 // Each object has a unique ID. This is incremented each time a new object is created.
 let _nextObjectId = 1;
@@ -120,6 +122,12 @@ class SpaceStore extends EventEmitter {
     const id = `asteroid_${_nextObjectId++}`;
     const object = this._createObject(now, id, position, speed, hull, isNew, 0);
     _asteroids = _asteroids.set(id, object);
+  }
+
+  _addJunk(now, position, speed, hull, ttl) {
+    const id = `junk_${_nextObjectId++}`;
+    const object = this._createObject(now, id, position, speed, hull, false, ttl);
+    _junk = _junk.set(id, object);
   }
 
   _generateAsteroidComponents(depth, baseSize) {
@@ -272,6 +280,7 @@ class SpaceStore extends EventEmitter {
     _ships = _ships.withMutations(reset);
     _asteroids = _asteroids.withMutations(reset);
     _shots = _shots.withMutations(reset);
+    _junk = _junk.withMutations(reset);
   }
 
   _updatePositionsAndSpeeds(now) {
@@ -315,6 +324,7 @@ class SpaceStore extends EventEmitter {
     _ships = _ships.withMutations(update);
     _asteroids = _asteroids.withMutations(update);
     _shots = _shots.withMutations(update);
+    _junk = _junk.withMutations(update);
   }
 
   handleTick(now) {
@@ -326,51 +336,24 @@ class SpaceStore extends EventEmitter {
 
     _shots.forEach((shot) => {
       const shotPosition = shot.get("position").toJS();
-      const shotSize = shot.get("hull").get("size");
+      const shotHull = shot.get("hull");
+      const shotSize = shotHull.get("size");
       _asteroids.some((asteroid) => {
         const asteroidPosition = asteroid.get("position").toJS();
-        const asteroidSize = asteroid.get("hull").get("size");
+        const asteroidHull = asteroid.get("hull");
+        const asteroidSize = asteroidHull.get("size");
         if (VectorMath.isCollision(shotPosition, shotSize, asteroidPosition, asteroidSize)) {
           _shots = _shots.delete(shot.get("id"));
           _asteroids = _asteroids.delete(asteroid.get("id"));
-          const components = asteroid.get("hull").get("components");
+          const components = asteroidHull.get("components");
           if (components.size > 1) {
-            // The asteroid is big enough to be split.
-            components.forEach((component) => {
-              const subcomponents = component.get("components");
-              const componentSize = component.get("size");
-              let hull = null;
-              if (subcomponents) {
-                hull = {
-                  size: componentSize,
-                  components: subcomponents.toJS(),
-                };
-              } else {
-                hull = {
-                  size: componentSize,
-                  components: [component.toJS()],
-                };
-                hull.components[0].position.x = 0.5;
-                hull.components[0].position.y = 0.5;
-                hull.components[0].position.r = 0.0;
-              }
-              const x = (component.get("position").get("x") - 0.5) * asteroidSize;
-              const y = (component.get("position").get("y") - 0.5) * asteroidSize;
-              const angle = asteroidPosition.r * 2 * Math.PI;
-              const position = {
-                x: (x * Math.cos(angle) - y * Math.sin(angle)) + asteroidPosition.x,
-                y: (x * Math.sin(angle) + y * Math.cos(angle)) + asteroidPosition.y,
-                r: (component.get("position").get("r") + asteroidPosition.r) % 1.0,
-              };
-              const force = 0.1;
-              let direction = VectorMath.direction(asteroidPosition, position);
-              if (isNaN(direction)) {
-                console.log("Warning: Direction is 'NaN'. Replacing with '0.0'.");
-                direction = 0.0;
-              }
-              const speed = VectorMath.applyForce(asteroid.get("speed").toJS(), direction, force);
-              this._addAsteroid(now, position, speed, hull, false);
-            });
+            const asteroidSpeed = asteroid.get("speed").toJS();
+            this._splitAsteroid(now, asteroidPosition, asteroidSpeed, asteroidHull.toJS());
+          } else {
+            // hull.clip = { x: 0.0, y: 0.0, w: 0.5, h: 1.0};
+            // this._addJunk(now, position, speed, hull, false, JUNK_TTL);
+            // hull.clip = { x: 0.5, y: 0.0, w: 0.5, h: 1.0};
+            // this._addJunk(now, position, speed, hull, false, JUNK_TTL);
           }
           return true;
         }
@@ -378,6 +361,40 @@ class SpaceStore extends EventEmitter {
       });
     });
     _lastTickTimestamp = now;
+  }
+
+  _splitAsteroid(now, position, speed, hull) {
+    // The asteroid is big enough to be split.
+    hull.components.forEach((component) => {
+      const subcomponents = component.components;
+      const size = component.size;
+      let componentHull = null;
+      if (subcomponents) {
+        componentHull = {
+          size,
+          components: subcomponents,
+        };
+      } else {
+        componentHull = {
+          size,
+          components: [{
+            position: { x: 0.5, y: 0.5, r: 0.0 },
+            size,
+            symbol: component.symbol,
+          }],
+        };
+      }
+      const componentPosition = VectorMath.absolutePosition(position,
+        component.position, hull.size);
+      let direction = VectorMath.direction(position, componentPosition);
+      if (isNaN(direction)) {
+        console.log("Warning: Direction is 'NaN'. Replacing with '0.0'.");
+        direction = 0.0;
+      }
+      const force = 0.1;
+      const componentSpeed = VectorMath.applyForce(speed, direction, force);
+      this._addAsteroid(now, componentPosition, componentSpeed, componentHull, false);
+    });
   }
 }
 

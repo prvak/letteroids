@@ -48,6 +48,25 @@ const VectorMath = {
   },
 
   /**
+   * Compute absolute position of given relative position.
+   *
+   * @param {object} absolutePosition Base position of some object {x, y, r}.
+   * @param {object} relativePosition Position relative to base position {x, y, r}.
+   * @param {number} scale Scale of relative position to base position.
+   * @returns Absolute position that corresponds to the relative position {x, y, r}.
+   */
+  absolutePosition(absolutePosition, relativePosition, size) {
+    const x = (relativePosition.x - 0.5) * size;
+    const y = (relativePosition.y - 0.5) * size;
+    const angle = VectorMath._directionToAngle(absolutePosition.r);
+    return {
+      x: (x * Math.cos(angle) - y * Math.sin(angle)) + absolutePosition.x,
+      y: (x * Math.sin(angle) + y * Math.cos(angle)) + absolutePosition.y,
+      r: (relativePosition.r + absolutePosition.r) % 1.0,
+    };
+  },
+
+  /**
    * Compute current speed of an object given its initial speed,
    * and acceleration.
    *
