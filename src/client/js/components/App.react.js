@@ -2,6 +2,7 @@ import React from "react";
 
 import objectsStore from "../stores/SpaceStore";
 import Space from "../components/Space.react";
+import MessageBox from "../components/MessageBox.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
 import HtmlUtils from "../HtmlUtils";
@@ -180,17 +181,19 @@ class App extends React.Component {
   }
 
   render() {
-    return (
-      <div id="app">
-        <Space
-          ships={this.state.ships}
-          shots={this.state.shots}
-          asteroids={this.state.asteroids}
-          junk={this.state.junk}
-          dimensions={this.state.dimensions}
-        />
-      </div>
-    );
+    const space = (<Space
+      ships={this.state.ships}
+      shots={this.state.shots}
+      asteroids={this.state.asteroids}
+      junk={this.state.junk}
+      dimensions={this.state.dimensions}
+    />);
+
+    if (this.state.isGamePaused) {
+      const message = <MessageBox title="Paused" />;
+      return <div id="app">{space} {message}</div>;
+    }
+    return <div id="app">{space}</div>;
   }
 }
 

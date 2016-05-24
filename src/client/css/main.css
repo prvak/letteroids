@@ -41,3 +41,16 @@
   vertical-align: middle;
   border-radius: 50%;
 }
+
+.messageBox {
+  text-align: center;
+  position: absolute;
+  box-sizing: border-box;
+  border: solid black 1px;
+  background-color: white;
+  margin: auto;
+  width: 30%;
+  top: 30%;
+  left: 0px;
+  right: 0px;
+}
