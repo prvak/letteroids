@@ -44,24 +44,33 @@ class App extends React.Component {
     this._onKeyDown = (event) => {
       const now = HtmlUtils.now();
       const shipId = 1;
+      if (!this._isGameActive()) {
+        switch (event.code) {
+          case "OSLeft":
+          case "OSRight":
+          case "AltLeft":
+          case "AltRight":
+          case "ControlLeft":
+          case "ControlRight":
+            // Ignore control keys.
+            return;
+          default:
+            SpaceActions.resumeGame(now);
+            return;
+        }
+      }
       switch (event.code) {
         case "ArrowLeft":
-          if (this._isGameActive()) {
-            SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
-          }
+          SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
           break;
         case "ArrowRight":
-          if (this._isGameActive()) {
-            SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
-          }
+          SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
           break;
         case "ArrowUp":
-          if (this._isGameActive()) {
-            SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
-          }
+          SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
           break;
         case "Space":
-          if (this._isGameActive() && !this._shootTimer) {
+          if (!this._shootTimer) {
             const sinceLastShot = now - this._lastShotTs;
             const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
             if (sinceLastShot >= minSinceLastShot) {
@@ -75,11 +84,7 @@ class App extends React.Component {
           SpaceActions.addAsteroid(now);
           break;
         case "KeyP":
-          if (this.state.isGamePaused) {
-            SpaceActions.resumeGame(now);
-          } else {
-            SpaceActions.pauseGame(now);
-          }
+          SpaceActions.pauseGame(now);
           break;
         default:
           break;
@@ -88,26 +93,21 @@ class App extends React.Component {
     this._onKeyUp = (event) => {
       const now = HtmlUtils.now();
       const shipId = 1;
+      if (!this._isGameActive()) {
+        return;
+      }
       switch (event.code) {
         case "ArrowLeft":
-          if (this._isGameActive()) {
-            SpaceActions.rotateShip(now, shipId, 0);
-          }
+          SpaceActions.rotateShip(now, shipId, 0);
           break;
         case "ArrowRight":
-          if (this._isGameActive()) {
-            SpaceActions.rotateShip(now, shipId, 0);
-          }
+          SpaceActions.rotateShip(now, shipId, 0);
           break;
         case "ArrowUp":
-          if (this._isGameActive()) {
-            SpaceActions.accelerateShip(now, shipId, 0);
-          }
+          SpaceActions.accelerateShip(now, shipId, 0);
           break;
         case "Space":
-          if (this._isGameActive()) {
-            this._stopShootTimer();
-          }
+          this._stopShootTimer();
           break;
         default:
           break;
