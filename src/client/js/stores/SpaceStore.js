@@ -190,7 +190,6 @@ class SpaceStore extends EventEmitter {
 
   _createObject(now, id, position, speed, hull, isNew, ttl) {
     const force = 0.0;
-    const expiresAt = ttl ? now + ttl : 0;
     const object = Immutable.fromJS({
       id,
       ts: now,
@@ -199,7 +198,7 @@ class SpaceStore extends EventEmitter {
       position,
       speed,
       force,
-      expiresAt,
+      ttl,
       hull,
       isNew,
     });
@@ -294,12 +293,12 @@ class SpaceStore extends EventEmitter {
   _updatePositionsAndSpeeds(now, updateInitialState = false) {
     const update = (objects) => {
       objects.forEach((object) => {
+        const ts = object.get("ts");
         const objectId = object.get("id");
-        const expires = object.get("expiresAt");
-        if (expires && expires < now) {
+        const ttl = object.get("ttl");
+        if (ttl && ttl <= (now - ts)) {
           objects.delete(objectId);
         } else {
-          const ts = object.get("ts");
           const duration = (now - ts) / 1000;
           const speed = object.get("initialSpeed").toJS();
           const position = object.get("initialPosition").toJS();
@@ -331,6 +330,7 @@ class SpaceStore extends EventEmitter {
               o.set("initialPosition", p);
               o.set("initialSpeed", s);
               o.set("ts", now);
+              o.set("ttl", ttl > 0 ? ttl - (now - ts) : 0);
             }
           }));
         }
