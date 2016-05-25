@@ -15,6 +15,8 @@ function getAppState() {
     junk: objectsStore.getJunk(),
     dimensions: objectsStore.getDimensions(),
     isGamePaused: objectsStore.isGamePaused(),
+    isGameOver: objectsStore.isGameOver(),
+    isGameTerminated: objectsStore.isGameTerminated(),
   };
 }
 
@@ -34,8 +36,13 @@ class App extends React.Component {
     this._lastShotTs = HtmlUtils.now();
     this._onChange = () => {
       this.setState(getAppState());
-      if (this.state.isGamePaused) {
-        this._stopTickTimer();
+      if (!this._isGameActive()) {
+        if (this.state.isGamePaused) {
+          this._stopTickTimer();
+        }
+        if (this.state.isGameOver) {
+          this._startTerminationTimer();
+        }
         this._stopShootTimer();
       } else {
         this._startTickTimer();
@@ -55,7 +62,9 @@ class App extends React.Component {
             // Ignore control keys.
             return;
           default:
-            SpaceActions.resumeGame(now);
+            if (this.state.isGamePaused) {
+              SpaceActions.resumeGame(now);
+            }
             return;
         }
       }
@@ -124,6 +133,10 @@ class App extends React.Component {
       this._lastShotTs = now;
       SpaceActions.shoot(now, 0.3, SHOT_TTL);
     };
+    this._onGameTerminated = () => {
+      const now = HtmlUtils.now();
+      SpaceActions.terminateGame(now);
+    };
     this._onResize = () => {
       const w = window;
       const d = document;
@@ -154,7 +167,7 @@ class App extends React.Component {
   }
 
   _isGameActive() {
-    return !this.state.isGamePaused;
+    return !this.state.isGamePaused && !this.state.isGameOver;
   }
 
   _startTickTimer() {
@@ -181,6 +194,12 @@ class App extends React.Component {
     }
   }
 
+  _startTerminationTimer() {
+    if (!this._terminationTimer) {
+      this._terminationTimer = setTimeout(this._onGameTerminated, 1500);
+    }
+  }
+
   render() {
     const space = (<Space
       ships={this.state.ships}
@@ -193,7 +212,10 @@ class App extends React.Component {
       height: `${this.state.dimensions.height}rem`,
     };
 
-    if (this.state.isGamePaused) {
+    if (this.state.isGameTerminated) {
+      const message = <MessageBox title="Game over" message="Press any key to restart." />;
+      return <div id="app" style={style}>{space} {message}</div>;
+    } else if (this.state.isGamePaused) {
       const message = <MessageBox title="Paused" message="Press any key to continue." />;
       return <div id="app" style={style}>{space} {message}</div>;
     }

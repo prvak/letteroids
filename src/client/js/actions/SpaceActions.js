@@ -50,6 +50,12 @@ const SpaceActions = {
       now,
     });
   },
+  terminateGame: (now) => {
+    AppDispatcher.dispatch({
+      actionType: SpaceConstants.GAME_TERMINATE,
+      now,
+    });
+  },
 };
 
 export default SpaceActions;

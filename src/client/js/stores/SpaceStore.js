@@ -27,6 +27,8 @@ let _lastTickTimestamp = null;
 // There is one ship. This is its id.
 let _shipId = null;
 let _isGamePaused = false;
+let _isGameOver = false;
+let _isGameTerminated = false;
 
 // Current size of the space.
 const _spaceDimensions = {
@@ -385,6 +387,7 @@ class SpaceStore extends EventEmitter {
           _ships = _ships.delete(ship.get("id"));
           const shipSpeed = ship.get("speed");
           this._junkHull(now, shipPosition, shipSpeed, shipHull);
+          _isGameOver = true;
           return true;
         }
         return false;
@@ -457,6 +460,18 @@ class SpaceStore extends EventEmitter {
   isGamePaused() {
     return _isGamePaused;
   }
+
+  isGameOver() {
+    return _isGameOver;
+  }
+
+  terminateGame() {
+    _isGameTerminated = true;
+  }
+
+  isGameTerminated() {
+    return _isGameTerminated;
+  }
 }
 
 const store = new SpaceStore();
@@ -491,6 +506,10 @@ AppDispatcher.register((action) => {
       break;
     case SpaceConstants.GAME_RESUME:
       store.resumeGame(action.now);
+      store.emitChange();
+      break;
+    case SpaceConstants.GAME_TERMINATE:
+      store.terminateGame(action.now);
       store.emitChange();
       break;
     default:

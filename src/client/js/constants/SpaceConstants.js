@@ -6,6 +6,7 @@ const SpaceConstants = {
   OBJECTS_TICK: "OBJECTS_TICK",
   GAME_PAUSE: "GAME_PAUSE",
   GAME_RESUME: "GAME_RESUME",
+  GAME_TERMINATE: "GAME_TERMINATE",
   // Space is a square. This is the length of its side in rem units.
   SPACE_SIZE: 50,
 };
