@@ -62,7 +62,10 @@ class App extends React.Component {
             // Ignore control keys.
             return;
           default:
-            if (this.state.isGamePaused) {
+            if (this.state.isGameTerminated) {
+              SpaceActions.startGame(HtmlUtils.now());
+              this._terminationTimer = null;
+            } else if (this.state.isGamePaused) {
               SpaceActions.resumeGame(now);
             }
             return;
@@ -154,6 +157,7 @@ class App extends React.Component {
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
     window.addEventListener("resize", this._onResize);
+    SpaceActions.startGame(HtmlUtils.now());
     this._startTickTimer();
     this._onResize();
   }
@@ -167,7 +171,9 @@ class App extends React.Component {
   }
 
   _isGameActive() {
-    return !this.state.isGamePaused && !this.state.isGameOver;
+    return !this.state.isGamePaused
+      && !this.state.isGameOver
+      && !this.state.isGameTerminated;
   }
 
   _startTickTimer() {

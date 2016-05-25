@@ -26,6 +26,7 @@ let _nextObjectId = 1;
 let _lastTickTimestamp = null;
 // There is one ship. This is its id.
 let _shipId = null;
+let _isGameStarted = false;
 let _isGamePaused = false;
 let _isGameOver = false;
 let _isGameTerminated = false;
@@ -446,6 +447,24 @@ class SpaceStore extends EventEmitter {
     this._addJunk(now, position, rightSpeed, hull);
   }
 
+  startGame(now) {
+    _ships = new Immutable.Map({});
+    _shots = new Immutable.Map({});
+    _asteroids = new Immutable.Map({});
+    _junk = new Immutable.Map({});
+    _shipId = null;
+    _isGameStarted = true;
+    _isGamePaused = false;
+    _isGameOver = false;
+    _isGameTerminated = false;
+    this.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
+    this._resetTimestamps(now);
+  }
+
+  isGameStarted() {
+    return _isGameStarted;
+  }
+
   pauseGame(now) {
     this._updatePositionsAndSpeeds(now, true);
     this.accelerateShip(now, _shipId, 0.0);
@@ -467,6 +486,7 @@ class SpaceStore extends EventEmitter {
 
   terminateGame() {
     _isGameTerminated = true;
+    _isGameStarted = false;
   }
 
   isGameTerminated() {
@@ -475,7 +495,6 @@ class SpaceStore extends EventEmitter {
 }
 
 const store = new SpaceStore();
-store.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
 
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
@@ -498,6 +517,10 @@ AppDispatcher.register((action) => {
       break;
     case SpaceConstants.OBJECTS_TICK:
       store.handleTick(action.now);
+      store.emitChange();
+      break;
+    case SpaceConstants.GAME_START:
+      store.startGame(action.now);
       store.emitChange();
       break;
     case SpaceConstants.GAME_PAUSE:

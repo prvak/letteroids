@@ -38,6 +38,12 @@ const SpaceActions = {
       now,
     });
   },
+  startGame: (now) => {
+    AppDispatcher.dispatch({
+      actionType: SpaceConstants.GAME_START,
+      now,
+    });
+  },
   pauseGame: (now) => {
     AppDispatcher.dispatch({
       actionType: SpaceConstants.GAME_PAUSE,
