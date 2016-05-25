@@ -75,15 +75,10 @@ class Space extends React.Component {
     this.props.junk.forEach((object) => {
       objects.push(this._renderObject(object));
     });
-    const style = {
-      width: `${this.props.dimensions.width}rem`,
-      height: `${this.props.dimensions.height}rem`,
-    };
     return (
       <div
         className="space"
         onClick={this._onClick}
-        style={style}
       >
         {objects}
       </div>
@@ -96,7 +91,6 @@ Space.propTypes = {
   shots: React.PropTypes.object.isRequired,
   asteroids: React.PropTypes.object.isRequired,
   junk: React.PropTypes.object.isRequired,
-  dimensions: React.PropTypes.object.isRequired,
 };
 
 export default Space;

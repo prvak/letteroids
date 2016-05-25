@@ -187,14 +187,17 @@ class App extends React.Component {
       shots={this.state.shots}
       asteroids={this.state.asteroids}
       junk={this.state.junk}
-      dimensions={this.state.dimensions}
     />);
+    const style = {
+      width: `${this.state.dimensions.width}rem`,
+      height: `${this.state.dimensions.height}rem`,
+    };
 
     if (this.state.isGamePaused) {
       const message = <MessageBox title="Paused" message="Press any key to continue." />;
-      return <div id="app">{space} {message}</div>;
+      return <div id="app" style={style}>{space} {message}</div>;
     }
-    return <div id="app">{space}</div>;
+    return <div id="app" style={style}>{space}</div>;
   }
 }
 
