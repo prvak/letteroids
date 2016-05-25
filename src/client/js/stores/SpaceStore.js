@@ -361,29 +361,42 @@ class SpaceStore extends EventEmitter {
           _shots = _shots.delete(shot.get("id"));
           _asteroids = _asteroids.delete(asteroid.get("id"));
           const components = asteroidHull.get("components");
-          const hull = asteroidHull.toJS();
-          const speed = asteroid.get("speed").toJS();
+          const asteroidSpeed = asteroid.get("speed");
           if (components.size > 1) {
-            this._splitHull(now, asteroidPosition, speed, hull);
+            this._splitHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
           } else {
-            hull.clip = "left";
-            const leftAngle = asteroidPosition.r - JUNK_ANGLE;
-            const leftSpeed = VectorMath.applyForce(speed, leftAngle, JUNK_FORCE);
-            this._addJunk(now, asteroidPosition, leftSpeed, hull);
-            hull.clip = "right";
-            const rightAngle = asteroidPosition.r + JUNK_ANGLE;
-            const rightSpeed = VectorMath.applyForce(speed, rightAngle, JUNK_FORCE);
-            this._addJunk(now, asteroidPosition, rightSpeed, hull);
+            this._junkHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
           }
           return true;
         }
         return false;
       });
     });
+
+    _ships.forEach((ship) => {
+      const shipPosition = ship.get("position").toJS();
+      const shipHull = ship.get("hull");
+      const shipSize = shipHull.get("size");
+      _asteroids.some((asteroid) => {
+        const asteroidPosition = asteroid.get("position").toJS();
+        const asteroidHull = asteroid.get("hull");
+        const asteroidSize = asteroidHull.get("size");
+        if (VectorMath.isCollision(shipPosition, shipSize, asteroidPosition, asteroidSize)) {
+          _ships = _ships.delete(ship.get("id"));
+          const shipSpeed = ship.get("speed");
+          this._junkHull(now, shipPosition, shipSpeed, shipHull);
+          return true;
+        }
+        return false;
+      });
+    });
+
     _lastTickTimestamp = now;
   }
 
-  _splitHull(now, position, speed, hull) {
+  _splitHull(now, position, objectSpeed, objectHull) {
+    const speed = objectSpeed.toJS();
+    const hull = objectHull.toJS();
     // The asteroid is big enough to be split.
     hull.components.forEach((component) => {
       const subcomponents = component.components;
@@ -415,6 +428,19 @@ class SpaceStore extends EventEmitter {
       const componentSpeed = VectorMath.applyForce(speed, direction, force);
       this._addAsteroid(now, componentPosition, componentSpeed, componentHull, false);
     });
+  }
+
+  _junkHull(now, position, objectSpeed, objectHull) {
+    const hull = objectHull.toJS();
+    const speed = objectSpeed.toJS();
+    hull.clip = "left";
+    const leftAngle = position.r - JUNK_ANGLE;
+    const leftSpeed = VectorMath.applyForce(speed, leftAngle, JUNK_FORCE);
+    this._addJunk(now, position, leftSpeed, hull);
+    hull.clip = "right";
+    const rightAngle = position.r + JUNK_ANGLE;
+    const rightSpeed = VectorMath.applyForce(speed, rightAngle, JUNK_FORCE);
+    this._addJunk(now, position, rightSpeed, hull);
   }
 
   pauseGame(now) {
