@@ -190,7 +190,7 @@ class App extends React.Component {
     />);
 
     if (this.state.isGamePaused) {
-      const message = <MessageBox title="Paused" />;
+      const message = <MessageBox title="Paused" message="Press any key to continue." />;
       return <div id="app">{space} {message}</div>;
     }
     return <div id="app">{space}</div>;

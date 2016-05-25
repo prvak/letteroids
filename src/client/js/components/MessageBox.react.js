@@ -6,12 +6,16 @@ class MessageBox extends React.Component {
   }
 
   render() {
-    return <div className="messageBox"><h1>{this.props.title}</h1></div>;
+    return (<div className="messageBox">
+      <h1>{this.props.title}</h1>
+      <p>{this.props.message}</p>
+    </div>);
   }
 }
 
 MessageBox.propTypes = {
   title: React.PropTypes.string.isRequired,
+  message: React.PropTypes.string.isRequired,
 };
 
 export default MessageBox;
