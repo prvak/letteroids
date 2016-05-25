@@ -84,6 +84,7 @@ class App extends React.Component {
           SpaceActions.addAsteroid(now);
           break;
         case "KeyP":
+        case "Pause":
           SpaceActions.pauseGame(now);
           break;
         default:
