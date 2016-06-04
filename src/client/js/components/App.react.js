@@ -17,6 +17,7 @@ function getAppState() {
     junk: objectsStore.getJunk(),
     dimensions: objectsStore.getDimensions(),
     score: objectsStore.getScore(),
+    hiScore: objectsStore.getHiScore(),
     isGamePaused: objectsStore.isGamePaused(),
     isGameOver: objectsStore.isGameOver(),
     isGameTerminated: objectsStore.isGameTerminated(),
@@ -223,7 +224,7 @@ class App extends React.Component {
 
     const score = <ScoreBox score={this.state.score} />;
     if (this.state.isGameTerminated) {
-      const message = <GameOverBox score={this.state.score} hiScore={0} />;
+      const message = <GameOverBox score={this.state.score} hiScore={this.state.hiScore} />;
       return <div id="app" style={style}>{space} {score} {message}</div>;
     } else if (this.state.isGamePaused) {
       const message = <GamePausedBox />;

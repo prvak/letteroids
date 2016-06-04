@@ -5,6 +5,7 @@ import AppDispatcher from "../dispatcher/AppDispatcher";
 import SpaceConstants from "../constants/SpaceConstants";
 import VectorMath from "../VectorMath";
 import Random from "../Random";
+import HtmlUtils from "../HtmlUtils";
 
 const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
@@ -15,6 +16,8 @@ const JUNK_FORCE = 0.05;
 const JUNK_ANGLE = 0.125;
 const SCORE_SHOT = -1;
 const SCORE_HIT = 10;
+// Key used to store and retrieve hi score from the local storage.
+const KEY_HI_SCORE = "hiScore";
 
 // All objects indexed by object ID.
 let _ships = new Immutable.Map({});
@@ -33,6 +36,10 @@ let _isGamePaused = false;
 let _isGameOver = false;
 let _isGameTerminated = false;
 let _score = 0;
+let _hiScore = 0;
+if (HtmlUtils.isLocalStorageSupported()) {
+  _hiScore = HtmlUtils.getFromLocalStorage(KEY_HI_SCORE);
+}
 
 // Current size of the space.
 const _spaceDimensions = {
@@ -65,6 +72,11 @@ class SpaceStore extends EventEmitter {
   /** Get current score rounded down to nearest integer. */
   getScore() {
     return Math.floor(_score);
+  }
+
+  /** Get hi score from previous games (even if current score is higher). */
+  getHiScore() {
+    return Math.floor(_hiScore);
   }
 
   emitChange() {
@@ -376,7 +388,10 @@ class SpaceStore extends EventEmitter {
           const asteroidSpeed = asteroid.get("speed");
           if (components.size > 1) {
             this._splitHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
-            _score += SCORE_HIT / asteroidSize;
+            if (!_isGameOver) {
+              // Do not count score after game is over.
+              _score += SCORE_HIT / asteroidSize;
+            }
           } else {
             this._junkHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
           }
@@ -399,6 +414,7 @@ class SpaceStore extends EventEmitter {
           const shipSpeed = ship.get("speed");
           this._junkHull(now, shipPosition, shipSpeed, shipHull);
           _isGameOver = true;
+          this._saveHiScore();
           return true;
         }
         return false;
@@ -467,6 +483,7 @@ class SpaceStore extends EventEmitter {
     _isGamePaused = false;
     _isGameOver = false;
     _isGameTerminated = false;
+    _hiScore = this._loadHiScore();
     _score = 0;
     this.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
     this._resetTimestamps(now);
@@ -502,6 +519,24 @@ class SpaceStore extends EventEmitter {
 
   isGameTerminated() {
     return _isGameTerminated;
+  }
+
+  _saveHiScore() {
+    if (_score > _hiScore) {
+      // Save new hi score but do not update the _hiScore value.
+      // It will be updated on restart.
+      HtmlUtils.setToLocalStorage(KEY_HI_SCORE, `${_score}`);
+    }
+  }
+
+  _loadHiScore() {
+    let hiScore = 0;
+    if (HtmlUtils.isLocalStorageSupported()) {
+      hiScore = HtmlUtils.getFromLocalStorage(KEY_HI_SCORE);
+    } else if (_score > _hiScore) {
+      hiScore = _score;
+    }
+    return hiScore;
   }
 }
 
