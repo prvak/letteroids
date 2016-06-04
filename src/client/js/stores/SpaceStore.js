@@ -13,6 +13,8 @@ const ASTEROID_SYMBOLS = ["@", "#", "$"];
 const JUNK_TTL = 500;
 const JUNK_FORCE = 0.05;
 const JUNK_ANGLE = 0.125;
+const SCORE_SHOT = -1;
+const SCORE_HIT = 10;
 
 // All objects indexed by object ID.
 let _ships = new Immutable.Map({});
@@ -60,8 +62,9 @@ class SpaceStore extends EventEmitter {
     return _spaceDimensions;
   }
 
+  /** Get current score rounded down to nearest integer. */
   getScore() {
-    return _score;
+    return Math.floor(_score);
   }
 
   emitChange() {
@@ -282,6 +285,7 @@ class SpaceStore extends EventEmitter {
     // Shoot!
     const shotSpeed = VectorMath.applyForce(currentSpeed, currentPosition.r, force);
     this.addShot(now, currentPosition, shotSpeed, ttl);
+    _score += SCORE_SHOT;
   }
 
   _resetTimestamps(now) {
@@ -372,6 +376,7 @@ class SpaceStore extends EventEmitter {
           const asteroidSpeed = asteroid.get("speed");
           if (components.size > 1) {
             this._splitHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
+            _score += SCORE_HIT / asteroidSize;
           } else {
             this._junkHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
           }
