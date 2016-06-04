@@ -2,7 +2,8 @@ import React from "react";
 
 import objectsStore from "../stores/SpaceStore";
 import Space from "../components/Space.react";
-import MessageBox from "../components/MessageBox.react";
+import GamePausedBox from "../components/GamePausedBox.react";
+import GameOverBox from "../components/GameOverBox.react";
 import ScoreBox from "../components/ScoreBox.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
@@ -222,10 +223,10 @@ class App extends React.Component {
 
     const score = <ScoreBox score={this.state.score} />;
     if (this.state.isGameTerminated) {
-      const message = <MessageBox title="Game over" message="Press any key to restart." />;
+      const message = <GameOverBox score={this.state.score} hiScore={0} />;
       return <div id="app" style={style}>{space} {score} {message}</div>;
     } else if (this.state.isGamePaused) {
-      const message = <MessageBox title="Paused" message="Press any key to continue." />;
+      const message = <GamePausedBox />;
       return <div id="app" style={style}>{space} {score} {message}</div>;
     }
     return <div id="app" style={style}>{space} {score}</div>;
