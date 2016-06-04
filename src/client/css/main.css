@@ -55,3 +55,13 @@
   left: 0px;
   right: 0px;
 }
+
+.scoreBox {
+  text-align: center;
+  position: absolute;
+  box-sizing: border-box;
+  color: gray;
+  font-size: 1.5rem;
+  top: 0.5rem;
+  right: 0.5rem;
+}

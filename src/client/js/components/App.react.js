@@ -3,6 +3,7 @@ import React from "react";
 import objectsStore from "../stores/SpaceStore";
 import Space from "../components/Space.react";
 import MessageBox from "../components/MessageBox.react";
+import ScoreBox from "../components/ScoreBox.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
 import HtmlUtils from "../HtmlUtils";
@@ -14,6 +15,7 @@ function getAppState() {
     asteroids: objectsStore.getAsteroids(),
     junk: objectsStore.getJunk(),
     dimensions: objectsStore.getDimensions(),
+    score: objectsStore.getScore(),
     isGamePaused: objectsStore.isGamePaused(),
     isGameOver: objectsStore.isGameOver(),
     isGameTerminated: objectsStore.isGameTerminated(),
@@ -218,14 +220,15 @@ class App extends React.Component {
       height: `${this.state.dimensions.height}rem`,
     };
 
+    const score = <ScoreBox score={this.state.score} />;
     if (this.state.isGameTerminated) {
       const message = <MessageBox title="Game over" message="Press any key to restart." />;
-      return <div id="app" style={style}>{space} {message}</div>;
+      return <div id="app" style={style}>{space} {score} {message}</div>;
     } else if (this.state.isGamePaused) {
       const message = <MessageBox title="Paused" message="Press any key to continue." />;
-      return <div id="app" style={style}>{space} {message}</div>;
+      return <div id="app" style={style}>{space} {score} {message}</div>;
     }
-    return <div id="app" style={style}>{space}</div>;
+    return <div id="app" style={style}>{space} {score}</div>;
   }
 }
 

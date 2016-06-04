@@ -30,6 +30,7 @@ let _isGameStarted = false;
 let _isGamePaused = false;
 let _isGameOver = false;
 let _isGameTerminated = false;
+let _score = 0;
 
 // Current size of the space.
 const _spaceDimensions = {
@@ -57,6 +58,10 @@ class SpaceStore extends EventEmitter {
   /** Width and height of the space in rem units. */
   getDimensions() {
     return _spaceDimensions;
+  }
+
+  getScore() {
+    return _score;
   }
 
   emitChange() {
@@ -457,6 +462,7 @@ class SpaceStore extends EventEmitter {
     _isGamePaused = false;
     _isGameOver = false;
     _isGameTerminated = false;
+    _score = 0;
     this.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
     this._resetTimestamps(now);
   }
