@@ -7,7 +7,11 @@
     "start": "babel-node src/index.js",
     "build": "browserify src/client/js/main.js -t babelify --outfile src/client/js/bundle.js",
     "lint": "eslint src/",
-    "test": "mocha --compilers js:babel-register --recursive test/"
+    "test": "mocha --compilers js:babel-register --recursive test/",
+    "minify": "uglifyjs --compress --output src/client/js/bundle.js -- src/client/js/bundle.js",
+    "makedirs": "mkdir -p export/js/ export/css/",
+    "copyfiles": "cp src/client/index.html export/ && cp src/client/css/main.css export/css/ && cp src/client/js/bundle.js export/js/",
+    "export": "NODE_ENV=production npm run makedirs && npm run build && npm run minify && npm run copyfiles"
   },
   "author": "Prvaak",
   "license": "MIT",
@@ -24,7 +28,8 @@
     "mocha": "^2.4.5",
     "react": "^15.0.2",
     "react-dom": "^15.0.2",
-    "seedrandom": "^2.4.2"
+    "seedrandom": "^2.4.2",
+    "uglify-js": "^2.6.2"
   },
   "devDependencies": {
     "eslint": "^2.7.0",
