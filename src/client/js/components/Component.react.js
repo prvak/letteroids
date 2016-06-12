@@ -34,7 +34,7 @@ class Component extends React.Component {
     } else if (symbol) {
       data = symbol;
     } else {
-      console.log("Something is wrong");
+      throw new "Component does not have neither 'symbol' nor 'subcomponents'!";
     }
     return <span className="component" style={style} > {data} </span>;
   }

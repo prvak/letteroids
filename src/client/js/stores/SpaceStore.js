@@ -451,7 +451,6 @@ class SpaceStore extends EventEmitter {
         component.position, hull.size);
       let direction = VectorMath.direction(position, componentPosition);
       if (isNaN(direction)) {
-        console.log("Warning: Direction is 'NaN'. Replacing with '0.0'.");
         direction = 0.0;
       }
       const force = 0.1;
