@@ -138,8 +138,8 @@ class SpaceStore extends EventEmitter {
 
     const startingCondition = random.choice(startingConditions);
     const position = startingCondition.position;
-    const direction = startingCondition.direction + 0.05 * (random.random() - 0.5);
-    const rotationSpeed = (random.random() - 0.5) * 0.1;
+    const direction = startingCondition.direction + 0.05 * (random.double() - 0.5);
+    const rotationSpeed = (random.double() - 0.5) * 0.1;
     const force = 0.3 / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
     const hull = {
@@ -164,7 +164,7 @@ class SpaceStore extends EventEmitter {
   _generateAsteroidComponents(depth, baseSize) {
     const count = 4;
     const generatePosition = (index) => {
-      const rotation = random.random();
+      const rotation = random.double();
       let position = null;
       if (index === 0) {
         position = { x: 0.25, y: 0.5, r: rotation };
@@ -184,7 +184,7 @@ class SpaceStore extends EventEmitter {
       if (depth === 1) {
         const symbol = random.choice(ASTEROID_SYMBOLS);
         // Scale 0.8 - 1.2 of base size.
-        const size = baseSize * (random.random() * 0.4 + 0.8);
+        const size = baseSize * (random.double() * 0.4 + 0.8);
         components.push({ symbol, position, size });
       } else {
         const subcomponents = this._generateAsteroidComponents(depth - 1, baseSize);
