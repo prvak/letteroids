@@ -5,14 +5,14 @@
   "main": "src/index.js",
   "scripts": {
     "start": "babel-node src/index.js",
-    "build": "browserify src/client/js/main.js -t babelify --outfile src/client/js/bundle.js",
+    "build": "browserify src/js/main.js -t babelify --outfile src/js/bundle.js",
     "lint": "eslint src/",
     "mocha": "mocha --compilers js:babel-register --recursive test/",
     "test": "npm run mocha && npm run lint",
     "clean": "rm export/ -rf",
     "makedirs": "mkdir -p export/js/",
-    "minify": "uglifyjs --compress --output export/js/bundle.js -- src/client/js/bundle.js",
-    "copyfiles": "cp -r src/client/css src/client/index.html export/",
+    "minify": "uglifyjs --compress --output export/js/bundle.js -- src/js/bundle.js",
+    "copyfiles": "cp -r src/css src/index.html export/",
     "export": "NODE_ENV=production npm run makedirs && npm run build && npm run minify && npm run copyfiles"
   },
   "author": "prvak",

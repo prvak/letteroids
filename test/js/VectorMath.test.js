@@ -4,7 +4,7 @@ import deepEqual from "chai-shallow-deep-equal";
 chai.should();
 chai.use(deepEqual);
 
-import VectorMath from "../../../src/client/js/VectorMath";
+import VectorMath from "../../src/js/VectorMath";
 
 const TOLERANCE = 0.0000000001;
 
