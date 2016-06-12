@@ -1,7 +1,7 @@
 {
   "name": "letteroids",
   "version": "1.0.0",
-  "description": "",
+  "description": "Classical Asteroids game written in React and with letters instead of asteroids",
   "main": "src/index.js",
   "scripts": {
     "start": "babel-node src/index.js",
@@ -17,6 +17,10 @@
   },
   "author": "prvak",
   "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git://github.com/prvak/letteroids.git"
+  },
   "dependencies": {
     "babel-cli": "^6.7.5",
     "babel-preset-es2015": "^6.6.0",
