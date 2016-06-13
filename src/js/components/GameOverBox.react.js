@@ -7,7 +7,7 @@ class GameOverBox extends React.Component {
 
   render() {
     const title = "Game Over";
-    const message = "Press any key to continue.";
+    const message = "Press any key to restart.";
     return (<div className="messageBox">
       <h1>{title}</h1>
       <p><span>Score:</span></p><p><span className="score">{this.props.score}</span></p>
