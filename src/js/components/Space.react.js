@@ -1,22 +1,13 @@
 import React from "react";
 
 import objectsStore from "../stores/SpaceStore";
-import SpaceActions from "../actions/SpaceActions";
 import SpaceObject from "../components/SpaceObject.react";
-import HtmlUtils from "../HtmlUtils";
 
 class Space extends React.Component {
   constructor() {
     super();
     this.state = {
       ships: objectsStore.getShips(),
-    };
-
-    this._onClick = (event) => {
-      const now = HtmlUtils.now();
-      const position = this._relativeMousePosition(event);
-      position.r = 0; // degrees
-      SpaceActions.addAsteroid(now);
     };
     this._onChange = () => {
       return {
@@ -31,25 +22,6 @@ class Space extends React.Component {
 
   componentWillUnmount() {
     objectsStore.removeChangeListener(this._onChange);
-  }
-
-  _relativeMousePosition(event) {
-    let totalOffsetX = 0;
-    let totalOffsetY = 0;
-    let canvasX = 0;
-    let canvasY = 0;
-    let currentElement = event.currentTarget;
-
-    do {
-      totalOffsetX += currentElement.offsetLeft - currentElement.scrollLeft;
-      totalOffsetY += currentElement.offsetTop - currentElement.scrollTop;
-      currentElement = currentElement.offsetParent;
-    } while (currentElement);
-
-    canvasX = (event.pageX - totalOffsetX) / event.currentTarget.clientWidth;
-    canvasY = (event.pageY - totalOffsetY) / event.currentTarget.clientHeight;
-
-    return { x: canvasX, y: canvasY };
   }
 
   _renderObject(object) {
