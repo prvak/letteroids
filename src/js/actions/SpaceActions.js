@@ -1,16 +1,16 @@
 import AppDispatcher from "../dispatcher/AppDispatcher";
-import SpaceConstants from "../constants/SpaceConstants";
+import ActionConstants from "../constants/ActionConstants";
 
 const SpaceActions = {
   addAsteroid: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.OBJECTS_ADD_ASTEROID,
+      actionType: ActionConstants.OBJECTS_ADD_ASTEROID,
       now,
     });
   },
   rotateShip: (now, objectId, rotationChange) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.OBJECTS_ROTATE_SHIP,
+      actionType: ActionConstants.OBJECTS_ROTATE_SHIP,
       now,
       objectId,
       rotationChange,
@@ -18,7 +18,7 @@ const SpaceActions = {
   },
   accelerateShip: (now, objectId, force) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.OBJECTS_ACCELERATE_SHIP,
+      actionType: ActionConstants.OBJECTS_ACCELERATE_SHIP,
       now,
       objectId,
       force,
@@ -26,7 +26,7 @@ const SpaceActions = {
   },
   shoot: (now, force, ttl) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.OBJECTS_SHOOT,
+      actionType: ActionConstants.OBJECTS_SHOOT,
       now,
       force,
       ttl,
@@ -34,31 +34,31 @@ const SpaceActions = {
   },
   nextTick: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.OBJECTS_TICK,
+      actionType: ActionConstants.OBJECTS_TICK,
       now,
     });
   },
   startGame: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.GAME_START,
+      actionType: ActionConstants.GAME_START,
       now,
     });
   },
   pauseGame: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.GAME_PAUSE,
+      actionType: ActionConstants.GAME_PAUSE,
       now,
     });
   },
   resumeGame: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.GAME_RESUME,
+      actionType: ActionConstants.GAME_RESUME,
       now,
     });
   },
   terminateGame: (now) => {
     AppDispatcher.dispatch({
-      actionType: SpaceConstants.GAME_TERMINATE,
+      actionType: ActionConstants.GAME_TERMINATE,
       now,
     });
   },

@@ -2,6 +2,7 @@ import events from "events";
 import Immutable from "immutable";
 
 import AppDispatcher from "../dispatcher/AppDispatcher";
+import ActionConstants from "../constants/ActionConstants";
 import SpaceConstants from "../constants/SpaceConstants";
 import VectorMath from "../VectorMath";
 import Random from "../Random";
@@ -544,39 +545,39 @@ const store = new SpaceStore();
 // Register callback to handle all updates
 AppDispatcher.register((action) => {
   switch (action.actionType) {
-    case SpaceConstants.OBJECTS_ADD_ASTEROID:
+    case ActionConstants.OBJECTS_ADD_ASTEROID:
       store.addAsteroid(action.now);
       store.emitChange();
       break;
-    case SpaceConstants.OBJECTS_ROTATE_SHIP:
+    case ActionConstants.OBJECTS_ROTATE_SHIP:
       store.rotateShip(action.now, _shipId, action.rotationChange);
       store.emitChange();
       break;
-    case SpaceConstants.OBJECTS_ACCELERATE_SHIP:
+    case ActionConstants.OBJECTS_ACCELERATE_SHIP:
       store.accelerateShip(action.now, _shipId, action.force);
       store.emitChange();
       break;
-    case SpaceConstants.OBJECTS_SHOOT:
+    case ActionConstants.OBJECTS_SHOOT:
       store.shoot(action.now, _shipId, action.force, action.ttl);
       store.emitChange();
       break;
-    case SpaceConstants.OBJECTS_TICK:
+    case ActionConstants.OBJECTS_TICK:
       store.handleTick(action.now);
       store.emitChange();
       break;
-    case SpaceConstants.GAME_START:
+    case ActionConstants.GAME_START:
       store.startGame(action.now);
       store.emitChange();
       break;
-    case SpaceConstants.GAME_PAUSE:
+    case ActionConstants.GAME_PAUSE:
       store.pauseGame(action.now);
       store.emitChange();
       break;
-    case SpaceConstants.GAME_RESUME:
+    case ActionConstants.GAME_RESUME:
       store.resumeGame(action.now);
       store.emitChange();
       break;
-    case SpaceConstants.GAME_TERMINATE:
+    case ActionConstants.GAME_TERMINATE:
       store.terminateGame(action.now);
       store.emitChange();
       break;
