@@ -8,6 +8,7 @@ import ScoreBox from "../components/ScoreBox.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
 import HtmlUtils from "../HtmlUtils";
+import Random from "../Random";
 
 function getAppState() {
   return {
@@ -27,6 +28,7 @@ function getAppState() {
 class App extends React.Component {
   constructor() {
     super();
+    this.random = new Random();
     this.state = getAppState();
     this._lastShotTs = HtmlUtils.now();
     this._onChange = () => {
@@ -34,13 +36,17 @@ class App extends React.Component {
       if (!this._isGameActive()) {
         if (this.state.isGamePaused) {
           this._stopTickTimer();
+          this._stopAsteroidTimer();
         }
         if (this.state.isGameOver) {
           this._startTerminationTimer();
+          this._stopAsteroidTimer();
+          this._sinceLastAsteroid = 0;
         }
         this._stopShootTimer();
       } else {
         this._startTickTimer();
+        this._startAsteroidTimer();
       }
     };
     this._onKeyDown = (event) => {
@@ -125,6 +131,30 @@ class App extends React.Component {
       const now = HtmlUtils.now();
       SpaceActions.nextTick(now);
     };
+    this._onAsteroid = () => {
+      const now = HtmlUtils.now();
+      const addAsteroid = () => {
+        this._lastAsteroidTs = now;
+        this._sinceLastAsteroid = 0;
+        this._asteroidChance = 0;
+        SpaceActions.addAsteroid(now);
+      };
+      const computeAsteroidChance = () => {
+        this._sinceLastAsteroid = now - this._lastAsteroidTs;
+        let chance = this._sinceLastAsteroid * SpaceConstants.ASTEROID_PROBABILITY;
+        chance /= this.state.asteroids.size;
+        console.log(chance);
+        return chance;
+      };
+
+      if (this.state.asteroids.size <= 0) {
+        // Player is bored there is nothing to shoot at.
+        addAsteroid();
+      } else if (this.random.double() < computeAsteroidChance()) {
+        // Bad luck. New asteroid will be created.
+        addAsteroid();
+      }
+    };
     this._onShoot = () => {
       const now = HtmlUtils.now();
       this._startShootTimer();
@@ -181,6 +211,23 @@ class App extends React.Component {
     if (this._tickTimer) {
       clearInterval(this._tickTimer);
       this._tickTimer = null;
+    }
+  }
+
+  _startAsteroidTimer() {
+    if (!this._asteroidTimer) {
+      const now = HtmlUtils.now();
+      this._lastAsteroidTs = now - this._sinceLastAsteroid; // restore value before pause
+      this._asteroidTimer = setInterval(this._onAsteroid, 1000 / SpaceConstants.ASTEROID_FREQUENCY);
+    }
+  }
+
+  _stopAsteroidTimer() {
+    if (this._asteroidTimer) {
+      const now = HtmlUtils.now();
+      this._sinceLastAsteroid = now - this._lastAsteroidTs; // save for later
+      clearInterval(this._asteroidTimer);
+      this._asteroidTimer = null;
     }
   }
 

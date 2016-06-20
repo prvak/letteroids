@@ -33,6 +33,11 @@ const SpaceConstants = {
   // How many points are awarded for each hit of asteroid of scale 1. The bigger the asteroid
   // the smaller the reward.
   SCORE_HIT: 10,
+  // How many times per second should we try to create a new asteroid.
+  ASTEROID_FREQUENCY: 5,
+  // Base probability that a new asteroid will be created for each millisecond since last asteroid.
+  // Increase this value for higher difficulty.
+  ASTEROID_PROBABILITY: 0.000004,
 };
 
 export default SpaceConstants;
