@@ -143,7 +143,6 @@ class App extends React.Component {
         this._sinceLastAsteroid = now - this._lastAsteroidTs;
         let chance = this._sinceLastAsteroid * SpaceConstants.ASTEROID_PROBABILITY;
         chance /= this.state.asteroids.size;
-        console.log(chance);
         return chance;
       };
 
