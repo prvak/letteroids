@@ -24,15 +24,6 @@ function getAppState() {
   };
 }
 
-// Rotation speed in full rotations per second.
-const SHIP_ROTATION_SPEED = 0.6;
-// Acceleration in screens per second^2.
-const SHIP_ACCELERATION = 0.3;
-// Number of shots fired per second.
-const SHIP_SHOOTING_SPEED = 10;
-const FPS = 30;
-const SHOT_TTL = 3000;
-
 class App extends React.Component {
   constructor() {
     super();
@@ -77,18 +68,18 @@ class App extends React.Component {
       }
       switch (event.code) {
         case "ArrowLeft":
-          SpaceActions.rotateShip(now, shipId, -SHIP_ROTATION_SPEED);
+          SpaceActions.rotateShip(now, shipId, -SpaceConstants.SHIP_ROTATION_SPEED);
           break;
         case "ArrowRight":
-          SpaceActions.rotateShip(now, shipId, SHIP_ROTATION_SPEED);
+          SpaceActions.rotateShip(now, shipId, SpaceConstants.SHIP_ROTATION_SPEED);
           break;
         case "ArrowUp":
-          SpaceActions.accelerateShip(now, shipId, SHIP_ACCELERATION);
+          SpaceActions.accelerateShip(now, shipId, SpaceConstants.SHIP_ACCELERATION);
           break;
         case "Space":
           if (!this._shootTimer) {
             const sinceLastShot = now - this._lastShotTs;
-            const minSinceLastShot = 1000 / SHIP_SHOOTING_SPEED;
+            const minSinceLastShot = 1000 / SpaceConstants.SHIP_SHOOTING_SPEED;
             if (sinceLastShot >= minSinceLastShot) {
               this._onShoot();
             } else {
@@ -138,7 +129,7 @@ class App extends React.Component {
       const now = HtmlUtils.now();
       this._startShootTimer();
       this._lastShotTs = now;
-      SpaceActions.shoot(now, 0.3, SHOT_TTL);
+      SpaceActions.shoot(now, SpaceConstants.SHOT_SPEED, SpaceConstants.SHOT_TTL);
     };
     this._onGameTerminated = () => {
       const now = HtmlUtils.now();
@@ -182,7 +173,7 @@ class App extends React.Component {
 
   _startTickTimer() {
     if (!this._tickTimer) {
-      this._tickTimer = setInterval(this._onTick, 1000 / FPS);
+      this._tickTimer = setInterval(this._onTick, 1000 / SpaceConstants.FPS);
     }
   }
 
@@ -194,7 +185,7 @@ class App extends React.Component {
   }
 
   _startShootTimer() {
-    this._shootTimer = setTimeout(this._onShoot, 1000 / SHIP_SHOOTING_SPEED);
+    this._shootTimer = setTimeout(this._onShoot, 1000 / SpaceConstants.SHIP_SHOOTING_SPEED);
   }
 
   _stopShootTimer() {
