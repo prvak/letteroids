@@ -12,11 +12,6 @@ const EventEmitter = events.EventEmitter;
 const CHANGE_EVENT = "change";
 const random = new Random();
 const ASTEROID_SYMBOLS = ["@", "#", "$"];
-const JUNK_TTL = 500;
-const JUNK_FORCE = 0.05;
-const JUNK_ANGLE = 0.125;
-const SCORE_SHOT = -1;
-const SCORE_HIT = 10;
 // Key used to store and retrieve hi score from the local storage.
 const KEY_HI_SCORE = "hiScore";
 
@@ -138,10 +133,12 @@ class SpaceStore extends EventEmitter {
     ];
 
     const startingCondition = random.choice(startingConditions);
+    const randomDirection = SpaceConstants.ASTEROID_DIRECTION * (random.double() - 0.5);
+    const randomSpeed = SpaceConstants.ASTEROID_ROTATION_SPEED * (random.double() - 0.5);
     const position = startingCondition.position;
-    const direction = startingCondition.direction + 0.05 * (random.double() - 0.5);
-    const rotationSpeed = (random.double() - 0.5) * 0.1;
-    const force = 0.3 / scale;
+    const direction = startingCondition.direction + randomDirection;
+    const rotationSpeed = randomSpeed;
+    const force = SpaceConstants.ASTEROID_SPEED / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
     const hull = {
       size: baseSize * Math.pow(2, scale),
@@ -158,7 +155,8 @@ class SpaceStore extends EventEmitter {
 
   _addJunk(now, position, speed, hull) {
     const id = `junk_${_nextObjectId++}`;
-    const object = this._createObject(now, id, position, speed, hull, false, JUNK_TTL);
+    const object = this._createObject(now, id, position, speed, hull, false,
+      SpaceConstants.JUNK_TTL);
     _junk = _junk.set(id, object);
   }
 
@@ -298,7 +296,7 @@ class SpaceStore extends EventEmitter {
     // Shoot!
     const shotSpeed = VectorMath.applyForce(currentSpeed, currentPosition.r, force);
     this.addShot(now, currentPosition, shotSpeed, ttl);
-    _score += SCORE_SHOT;
+    _score += SpaceConstants.SCORE_SHOT;
   }
 
   _resetTimestamps(now) {
@@ -391,7 +389,7 @@ class SpaceStore extends EventEmitter {
             this._splitHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
             if (!_isGameOver) {
               // Do not count score after game is over.
-              _score += SCORE_HIT / asteroidSize;
+              _score += SpaceConstants.SCORE_HIT / asteroidSize;
             }
           } else {
             this._junkHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
@@ -454,7 +452,7 @@ class SpaceStore extends EventEmitter {
       if (isNaN(direction)) {
         direction = 0.0;
       }
-      const force = 0.1;
+      const force = SpaceConstants.SPLIT_FORCE;
       const componentSpeed = VectorMath.applyForce(speed, direction, force);
       this._addAsteroid(now, componentPosition, componentSpeed, componentHull, false);
     });
@@ -463,13 +461,15 @@ class SpaceStore extends EventEmitter {
   _junkHull(now, position, objectSpeed, objectHull) {
     const hull = objectHull.toJS();
     const speed = objectSpeed.toJS();
+    // Create a junk object whose right part will be hidden.
     hull.clip = "left";
-    const leftAngle = position.r - JUNK_ANGLE;
-    const leftSpeed = VectorMath.applyForce(speed, leftAngle, JUNK_FORCE);
+    const leftAngle = position.r - SpaceConstants.JUNK_ANGLE;
+    const leftSpeed = VectorMath.applyForce(speed, leftAngle, SpaceConstants.JUNK_FORCE);
     this._addJunk(now, position, leftSpeed, hull);
+    // Create a junk object whose left part will be hidden.
     hull.clip = "right";
-    const rightAngle = position.r + JUNK_ANGLE;
-    const rightSpeed = VectorMath.applyForce(speed, rightAngle, JUNK_FORCE);
+    const rightAngle = position.r + SpaceConstants.JUNK_ANGLE;
+    const rightSpeed = VectorMath.applyForce(speed, rightAngle, SpaceConstants.JUNK_FORCE);
     this._addJunk(now, position, rightSpeed, hull);
   }
 
