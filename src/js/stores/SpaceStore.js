@@ -462,12 +462,12 @@ class SpaceStore extends EventEmitter {
     const hull = objectHull.toJS();
     const speed = objectSpeed.toJS();
     // Create a junk object whose right part will be hidden.
-    hull.clip = "left";
+    hull.junk = "left";
     const leftAngle = position.r - SpaceConstants.JUNK_ANGLE;
     const leftSpeed = VectorMath.applyForce(speed, leftAngle, SpaceConstants.JUNK_FORCE);
     this._addJunk(now, position, leftSpeed, hull);
     // Create a junk object whose left part will be hidden.
-    hull.clip = "right";
+    hull.junk = "right";
     const rightAngle = position.r + SpaceConstants.JUNK_ANGLE;
     const rightSpeed = VectorMath.applyForce(speed, rightAngle, SpaceConstants.JUNK_FORCE);
     this._addJunk(now, position, rightSpeed, hull);
