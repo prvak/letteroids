@@ -9,9 +9,13 @@ import Random from "../Random";
 import HtmlUtils from "../HtmlUtils";
 
 const EventEmitter = events.EventEmitter;
-const CHANGE_EVENT = "change";
 const random = new Random();
+// Name of the event that is emmited on each store change.
+const CHANGE_EVENT = "change";
+// Symbols used as asteroids.
 const ASTEROID_SYMBOLS = ["@", "#", "$"];
+// Symbol representing the ship.
+const SHIP_SYMBOL = "Δ";
 // Key used to store and retrieve hi score from the local storage.
 const KEY_HI_SCORE = "hiScore";
 
@@ -100,8 +104,8 @@ class SpaceStore extends EventEmitter {
       size: 0.02,
       components: [
         {
-          symbol: "V",
-          position: { x: 0.5, y: 0.5, r: 0.5 },
+          symbol: SHIP_SYMBOL,
+          position: { x: 0.5, y: 0.5, r: 0.0 },
           size: 0.02,
         },
       ],
