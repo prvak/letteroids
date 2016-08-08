@@ -107,6 +107,7 @@ class SpaceStore extends EventEmitter {
           symbol: SHIP_SYMBOL,
           position: { x: 0.5, y: 0.5, r: 0.0 },
           size: 0.02,
+          color: "red",
         },
       ],
     };
@@ -181,6 +182,7 @@ class SpaceStore extends EventEmitter {
       return position;
     };
 
+    const color = "black";
     const components = [];
     for (let i = 0; i < count; i++) {
       const position = generatePosition(i);
@@ -188,7 +190,7 @@ class SpaceStore extends EventEmitter {
         const symbol = random.choice(ASTEROID_SYMBOLS);
         // Scale 0.8 - 1.2 of base size.
         const size = baseSize * (random.double() * 0.4 + 0.8);
-        components.push({ symbol, position, size });
+        components.push({ symbol, position, size, color });
       } else {
         const subcomponents = this._generateAsteroidComponents(depth - 1, baseSize);
         const size = baseSize * Math.pow(2, depth - 1);
@@ -207,6 +209,7 @@ class SpaceStore extends EventEmitter {
           symbol: "x",
           position: { x: 0.5, y: 0.5, r: 0.5 },
           size: 0.006,
+          color: "red",
         },
       ],
     };

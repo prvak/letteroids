@@ -12,6 +12,7 @@ class Component extends React.Component {
     const symbol = this.props.component.get("symbol");
     const subcomponents = this.props.component.get("components");
     const position = this.props.component.get("position");
+    const color = this.props.component.get("color");
     const rotation = (position.get("r") * 360) % 360; // degrees
     const style = {
       left: `${position.get("x") * 100}%`,
@@ -23,6 +24,7 @@ class Component extends React.Component {
       marginTop: `${-size / 2}rem`,
       marginLeft: `${-size / 2}rem`,
       transform: `rotate(${rotation}deg)`,
+      color,
     };
 
     let data = null;
