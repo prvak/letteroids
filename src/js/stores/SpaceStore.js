@@ -7,16 +7,13 @@ import SpaceConstants from "../constants/SpaceConstants";
 import VectorMath from "../VectorMath";
 import Random from "../Random";
 import HtmlUtils from "../HtmlUtils";
+import HullGenerator from "../HullGenerator";
 
 const EventEmitter = events.EventEmitter;
 const random = new Random();
 // Name of the event that is emmited on each store change.
 const CHANGE_EVENT = "change";
-// Symbols used as asteroids.
-const ASTEROID_SYMBOLS = ["@", "#", "$"];
-// Symbol representing the ship.
-const SHIP_SYMBOL = "Δ";
-// Key used to store and retrieve hi score from the local storage.
+// Key used to store and retrieve hiscore from the local storage.
 const KEY_HI_SCORE = "hiScore";
 
 // All objects indexed by object ID.
@@ -83,16 +80,10 @@ class SpaceStore extends EventEmitter {
     this.emit(CHANGE_EVENT);
   }
 
-  /**
-   * @param {function} callback
-   */
   addChangeListener(callback) {
     this.on(CHANGE_EVENT, callback);
   }
 
-  /**
-   * @param {function} callback
-   */
   removeChangeListener(callback) {
     this.removeListener(CHANGE_EVENT, callback);
   }
@@ -100,24 +91,13 @@ class SpaceStore extends EventEmitter {
   addShip(now, position) {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
-    const hull = {
-      size: 0.02,
-      components: [
-        {
-          symbol: SHIP_SYMBOL,
-          position: { x: 0.5, y: 0.5, r: 0.0 },
-          size: 0.02,
-          color: "red",
-        },
-      ],
-    };
+    const hull = HullGenerator.theShip();
     const object = this._createObject(now, id, position, speed, hull, false, 0);
     _ships = _ships.set(id, object);
     _shipId = id;
   }
 
   addAsteroid(now, scale = 3) {
-    const baseSize = 0.04;
     const startingConditions = [
       {
         position: { x: 0.5, y: 1.2, r: 0.0 },
@@ -145,10 +125,7 @@ class SpaceStore extends EventEmitter {
     const rotationSpeed = randomSpeed;
     const force = SpaceConstants.ASTEROID_SPEED / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
-    const hull = {
-      size: baseSize * Math.pow(2, scale),
-      components: this._generateAsteroidComponents(scale, baseSize),
-    };
+    const hull = HullGenerator.theRocky();
     this._addAsteroid(now, position, speed, hull, true);
   }
 
@@ -165,54 +142,9 @@ class SpaceStore extends EventEmitter {
     _junk = _junk.set(id, object);
   }
 
-  _generateAsteroidComponents(depth, baseSize) {
-    const count = 4;
-    const generatePosition = (index) => {
-      const rotation = random.double();
-      let position = null;
-      if (index === 0) {
-        position = { x: 0.25, y: 0.5, r: rotation };
-      } else if (index === 1) {
-        position = { x: 0.75, y: 0.5, r: rotation };
-      } else if (index === 2) {
-        position = { x: 0.5, y: 0.75, r: rotation };
-      } else if (index === 3) {
-        position = { x: 0.5, y: 0.25, r: rotation };
-      }
-      return position;
-    };
-
-    const color = "black";
-    const components = [];
-    for (let i = 0; i < count; i++) {
-      const position = generatePosition(i);
-      if (depth === 1) {
-        const symbol = random.choice(ASTEROID_SYMBOLS);
-        // Scale 0.8 - 1.2 of base size.
-        const size = baseSize * (random.double() * 0.4 + 0.8);
-        components.push({ symbol, position, size, color });
-      } else {
-        const subcomponents = this._generateAsteroidComponents(depth - 1, baseSize);
-        const size = baseSize * Math.pow(2, depth - 1);
-        components.push({ components: subcomponents, position, size });
-      }
-    }
-    return components;
-  }
-
   addShot(now, position, speed, ttl) {
     const id = `shot_${_nextObjectId++}`;
-    const hull = {
-      size: 0.006,
-      components: [
-        {
-          symbol: "x",
-          position: { x: 0.5, y: 0.5, r: 0.5 },
-          size: 0.006,
-          color: "red",
-        },
-      ],
-    };
+    const hull = HullGenerator.theShot();
     const object = this._createObject(now, id, position, speed, hull, true, ttl);
     _shots = _shots.set(id, object);
   }
@@ -390,10 +322,11 @@ class SpaceStore extends EventEmitter {
         if (VectorMath.isCollision(shotPosition, shotSize, asteroidPosition, asteroidSize)) {
           _shots = _shots.delete(shot.get("id"));
           _asteroids = _asteroids.delete(asteroid.get("id"));
-          const components = asteroidHull.get("components");
+          const asteroidParts = asteroidHull.get("parts");
           const asteroidSpeed = asteroid.get("speed");
-          if (components.size > 1) {
-            this._splitHull(now, asteroidPosition, asteroidSpeed, asteroidHull);
+          if (asteroidParts && asteroidParts.size > 1) {
+            this._splitHull(now, asteroidParts, asteroidSize, asteroidPosition,
+              asteroidSpeed);
             if (!_isGameOver) {
               // Do not count score after game is over.
               _score += SpaceConstants.SCORE_HIT / asteroidSize;
@@ -430,38 +363,20 @@ class SpaceStore extends EventEmitter {
     _lastTickTimestamp = now;
   }
 
-  _splitHull(now, position, objectSpeed, objectHull) {
-    const speed = objectSpeed.toJS();
-    const hull = objectHull.toJS();
+  _splitHull(now, parts, size, position, speed) {
     // The asteroid is big enough to be split.
-    hull.components.forEach((component) => {
-      const subcomponents = component.components;
-      const size = component.size;
-      let componentHull = null;
-      if (subcomponents) {
-        componentHull = {
-          size,
-          components: subcomponents,
-        };
-      } else {
-        componentHull = {
-          size,
-          components: [{
-            position: { x: 0.5, y: 0.5, r: 0.0 },
-            size,
-            symbol: component.symbol,
-          }],
-        };
-      }
-      const componentPosition = VectorMath.absolutePosition(position,
-        component.position, hull.size);
-      let direction = VectorMath.direction(position, componentPosition);
+    parts.forEach((part) => {
+      const partHull = part.get("hull").toJS();
+      const partPosition = part.get("position").toJS();
+      const absolutePosition = VectorMath.absolutePosition(position,
+        partPosition, size);
+      let direction = VectorMath.direction(position, partPosition);
       if (isNaN(direction)) {
         direction = 0.0;
       }
       const force = SpaceConstants.SPLIT_FORCE;
-      const componentSpeed = VectorMath.applyForce(speed, direction, force);
-      this._addAsteroid(now, componentPosition, componentSpeed, componentHull, false);
+      const partSpeed = VectorMath.applyForce(speed.toJS(), direction, force);
+      this._addAsteroid(now, absolutePosition, partSpeed, partHull, false);
     });
   }
 

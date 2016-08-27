@@ -1,17 +1,16 @@
 import React from "react";
 
-import Component from "./Component.react";
+import Hull from "./Hull.react";
 import SpaceConstants from "../constants/SpaceConstants";
 
 class SpaceObject extends React.Component {
-  constructor() {
-    super();
-    this.state = {
-      isSelected: false,
-    };
+  shouldComponentUpdate(nextProps) {
+    return this.props.hull !== nextProps.hull
+      || this.props.position !== nextProps.position
+      || this.props.addShadows !== nextProps.addShadows;
   }
 
-  _createObject(components, size, x, y, rotation, junk, key) {
+  _createObject(hull, size, x, y, rotation, junk, key) {
     let clip = undefined;
     if (junk) {
       if (junk === "left") {
@@ -31,7 +30,7 @@ class SpaceObject extends React.Component {
       transform: `rotate(${rotation}deg)`,
       clip,
     };
-    return <span className="object" key={key} style={style}>{components}</span>;
+    return <span className="object" key={key} style={style}>{hull}</span>;
   }
 
   render() {
@@ -43,28 +42,24 @@ class SpaceObject extends React.Component {
 
     const size = s * SpaceConstants.SPACE_SIZE;
     const rotation = (r * 360) % 360; // degrees
-    const components = [];
-    this.props.hull.get("components").forEach((component, index) => {
-      components.push(<Component key={index} component={component} />);
-    });
-
     const objects = [];
+    const hull = <Hull hull={this.props.hull} />;
 
     // Add real object.
-    objects.push(this._createObject(components, size, x, y, rotation, junk, "x"));
+    objects.push(this._createObject(hull, size, x, y, rotation, junk, "x"));
     if (this.props.addShadows) {
       // Add shadow objects for each edge that the real object overlaps.
       if (x + s / 2 > 1.0) {
-        objects.push(this._createObject(components, size, x - 1.0, y, rotation, junk, "r"));
+        objects.push(this._createObject(hull, size, x - 1.0, y, rotation, junk, "r"));
       }
       if (y + s / 2 > 1.0) {
-        objects.push(this._createObject(components, size, x, y - 1.0, rotation, junk, "b"));
+        objects.push(this._createObject(hull, size, x, y - 1.0, rotation, junk, "b"));
       }
       if (x - s / 2 < 0.0) {
-        objects.push(this._createObject(components, size, x + 1.0, y, rotation, junk, "l"));
+        objects.push(this._createObject(hull, size, x + 1.0, y, rotation, junk, "l"));
       }
       if (y - s / 2 < 0.0) {
-        objects.push(this._createObject(components, size, x, y + 1.0, rotation, junk, "t"));
+        objects.push(this._createObject(hull, size, x, y + 1.0, rotation, junk, "t"));
       }
     }
     return <span>{objects}</span>;
