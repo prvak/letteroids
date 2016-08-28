@@ -310,25 +310,77 @@ class SpaceStore extends EventEmitter {
     } else {
       this._updatePositionsAndSpeeds(now);
     }
-    const forEachCollision = (set1, set2, callback) => {
+    const getAbsPosition = (object, basePosition, baseSize) => {
+      const position = object.get("position").toJS();
+      return VectorMath.absolutePosition(basePosition, position, baseSize);
+    };
+    const forEachSubCollision = (set1, set1Position, set1Size, set2,
+        set2Position, set2Size, callback) => {
       set1.forEach((o1) => {
-        const o1Position = o1.get("position").toJS();
         const o1Hull = o1.get("hull");
         const o1Size = o1Hull.get("size");
+        const o1Position = getAbsPosition(o1, set1Position, set1Size);
         set2.some((o2) => {
-          const o2Position = o2.get("position").toJS();
           const o2Hull = o2.get("hull");
           const o2Size = o2Hull.get("size");
+          const o2Position = getAbsPosition(o2, set2Position, set2Size);
           if (VectorMath.isCollision(o1Position, o1Size, o2Position, o2Size)) {
-            callback(o1, o2);
+            const o1Parts = o1Hull.get("parts");
+            const o2Parts = o2Hull.get("parts");
+            if (o1Parts && o2Parts) {
+              forEachSubCollision(o1Parts, o1Position, o1Size,
+                o2Parts, o2Position, o2Size, (part1, part2) => {
+                  part1.push({ object: o1, position: o1Position });
+                  part2.push({ object: o2, position: o2Position });
+                  callback(part1, part2);
+                });
+            } else if (o1Parts) {
+              forEachSubCollision(o1Parts, o1Position, o1Size, [o2],
+                  o2Position, o2Size, (part1) => {
+                    part1.push({ object: o1, position: o1Position });
+                    callback(part1, [{ object: o2, position: o2Position }]);
+                  });
+            } else if (o2Parts) {
+              forEachSubCollision([o1], o1Position, o1Size,
+                  o2Parts, o2Position, o2Size, (part1, part2) => {
+                    part2.push({ object: o2, position: o2Position });
+                    callback([{ object: o1, position: o1Position }], part2);
+                  });
+            } else {
+              callback(
+                [{ object: o1, position: o1Position }],
+                [{ object: o2, position: o2Position }]);
+            }
             return true;
           }
           return false;
         });
       });
     };
+    const forEachCollision = (set1, set2, callback) => {
+      const position = { x: 0.5, y: 0.5, r: 0.0 };
+      const size = 1.0;
+      forEachSubCollision(set1, position, size, set2, position, size, callback);
+    };
 
-    forEachCollision(_shots, _asteroids, (shot, asteroid) => {
+    forEachCollision(_shots, _asteroids, (shotParts, asteroidParts) => {
+      const originalAsteroid = asteroidParts[asteroidParts.length - 1].object;
+      const shot = shotParts[shotParts.length - 1].object;
+      const asteroid = this._onHit(now, asteroidParts);
+      _shots = _shots.delete(shot.get("id"));
+      if (asteroid) {
+        _asteroids = _asteroids.set(asteroid.get("id"), asteroid);
+      } else {
+        _asteroids = _asteroids.delete(originalAsteroid.get("id"));
+      }
+      if (!_isGameOver) {
+        // Do not count score after game is over.
+        const hull = originalAsteroid.get("hull");
+        _score += SpaceConstants.SCORE_HIT / hull.get("size");
+      }
+      /*
+      const shot = shotParts[shotParts.length - 1].object;
+      const asteroid = asteroidParts[asteroidParts.length - 1].object;
       _shots = _shots.delete(shot.get("id"));
       _asteroids = _asteroids.delete(asteroid.get("id"));
       const hull = asteroid.get("hull");
@@ -342,11 +394,16 @@ class SpaceStore extends EventEmitter {
       } else {
         this._junkHull(now, asteroid);
       }
+      */
     });
 
-    forEachCollision(_ships, _asteroids, (ship) => {
+    forEachCollision(_ships, _asteroids, (shipParts) => {
+      const ship = shipParts[shipParts.length - 1].object;
       _ships = _ships.delete(ship.get("id"));
-      this._junkHull(now, ship);
+      const position = ship.get("position").toJS();
+      const speed = ship.get("speed").toJS();
+      const hull = ship.get("hull");
+      this._junkHull(now, hull, position, speed);
       _isGameOver = true;
       this._saveHiScore();
     });
@@ -354,12 +411,84 @@ class SpaceStore extends EventEmitter {
     _lastTickTimestamp = now;
   }
 
-  _splitHull(now, object) {
-    const hull = object.get("hull");
+  _onHit(now, collidingParts) {
+    const originalObject = collidingParts[collidingParts.length - 1].object;
+    // Replace old hull within parent with the new hull.
+    const updateParentHull = (parentHull, oldHull, newHull) => {
+      let parts = parentHull.get("parts");
+      for (let i = 0; i < parts.size; i++) {
+        let part = parts.get(i);
+        const hull = part.get("hull");
+        if (hull === oldHull) {
+          if (newHull === null) {
+            parts = parts.delete(i);
+          } else {
+            part = part.set("hull", newHull);
+            parts = parts.set(i, part);
+          }
+          return parentHull.set("parts", parts);
+        }
+      }
+      throw new Error("Hull not found in the parent part.");
+    };
+    // Apply given effects on given hull.
+    const applyEffects = (originalHull, position, effects) => {
+      let hull = originalHull;
+      const health = hull.get("health");
+      effects.forEach((effect) => {
+        const type = effect.get("effect");
+        switch (type) {
+          case "damage":
+            hull = hull.set("health", hull.get("health") - 1);
+            break;
+          case "break":
+          default:
+            if (!health || health <= 0) {
+              const parts = hull.get("parts");
+              const speed = originalObject.get("speed").toJS();
+              if (parts && parts.size > 1) {
+                this._splitHull(now, hull, position, speed);
+                if (!_isGameOver) {
+                  // Do not count score after game is over.
+                  _score += SpaceConstants.SCORE_HIT / hull.get("size");
+                }
+              } else {
+                this._junkHull(now, hull, position, speed);
+              }
+              hull = null;
+            }
+            break;
+        }
+      });
+      return hull;
+    };
+    // Apply collision effects from smallest part to the biggest part.
+    let hull = collidingParts[0].object.get("hull");
+    let resonate = true;
+    for (let i = 0; i < collidingParts.length; i++) {
+      const position = collidingParts[i].position;
+      const effects = hull.get("onHit");
+      if (effects && resonate) {
+        hull = applyEffects(hull, position, effects);
+        resonate = hull === null; // hull was destroyed, apply hit to parent
+      }
+      if (i < collidingParts.length - 1) {
+        const originalHull = collidingParts[i].object.get("hull");
+        let parentHull = collidingParts[i + 1].object.get("hull");
+        parentHull = updateParentHull(parentHull, originalHull, hull);
+        hull = parentHull;
+      }
+    }
+    if (hull) {
+      const rootObject = collidingParts[collidingParts.length - 1].object;
+      return rootObject.set("hull", hull);
+    }
+    return null; // Object has been destroyed.
+  }
+
+  _splitHull(now, hull, position, speed) {
     const parts = hull.get("parts");
     const size = hull.get("size");
-    const position = object.get("position").toJS();
-    const speed = object.get("speed").toJS();
     // The asteroid is big enough to be split.
     parts.forEach((part) => {
       const partHull = part.get("hull").toJS();
@@ -376,11 +505,8 @@ class SpaceStore extends EventEmitter {
     });
   }
 
-  _junkHull(now, object) {
-    const hull = object.get("hull").toJS();
-    const position = object.get("position").toJS();
-    const speed = object.get("speed").toJS();
-
+  _junkHull(now, originalHull, position, speed) {
+    const hull = originalHull.toJS();
     // Create a junk object whose right part will be hidden.
     hull.junk = "left";
     const leftAngle = position.r - SpaceConstants.JUNK_ANGLE;

@@ -9,9 +9,10 @@ class Hull extends React.Component {
   }
 
   render() {
-    const size = this.props.hull.get("size") * SpaceConstants.SPACE_SIZE;
-    const symbol = this.props.hull.get("symbol");
-    const parts = this.props.hull.get("parts");
+    const hull = this.props.hull;
+    const size = hull.get("size") * SpaceConstants.SPACE_SIZE;
+    const symbol = hull.get("symbol");
+    const parts = hull.get("parts");
     let position = this.props.position;
     if (position) {
       position = position.toJS();

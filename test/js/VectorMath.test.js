@@ -79,6 +79,13 @@ describe("VectorMath", () => {
       const p = VectorMath.absolutePosition(position, subPosition, size);
       equalsDeepWithin(p, { x: 0.7, y: 0.3, r: 0.35 });
     });
+    it("no change for global object", () => {
+      const position = { x: 0.5, y: 0.5, r: 0.0 };
+      const subPosition = { x: 0.3, y: 0.7, r: 0.2 };
+      const size = 1.0;
+      const p = VectorMath.absolutePosition(position, subPosition, size);
+      equalsDeepWithin(p, { x: 0.3, y: 0.7, r: 0.2 });
+    });
   });
   describe("currentSpeed", () => {
     it("non-accelerated object's speed should not change", () => {
