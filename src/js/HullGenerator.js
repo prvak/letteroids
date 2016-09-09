@@ -52,6 +52,20 @@ class HullGenerator {
     return { parts, size, onHit };
   }
 
+  /** Lot of tiny rocks in circle formation. */
+  theCircle() {
+    const positions = this._positionsCircle(16, 0.8);
+    const parts = [];
+    positions.forEach((position) => {
+      const hull = this.theTinyRock();
+      parts.push({ hull, position });
+    });
+    const size = ASTEROID_SIZE * 4;
+    const onHit = [{ effect: "damage" }, { effect: "break" }];
+    const health = parts.length; // destroyed with last rock
+    return { parts, size, onHit, health };
+  }
+
   theShip() {
     const size = SHIP_SIZE;
     const symbol = SHIP_SYMBOL;
@@ -77,6 +91,23 @@ class HullGenerator {
       { x: 0.5, y: 0.75, r: rotation() },
       { x: 0.5, y: 0.25, r: rotation() },
     ];
+  }
+
+  /** Generate positions in circle formation. */
+  _positionsCircle(n, shift) {
+    const rotation = () => {
+      return random.double();
+    };
+    const positions = [];
+    for (let i = 0; i < n; i++) {
+      const angle = (360 / n) * i;
+      const scale = 1 - 2 * shift;
+      const x = shift + scale * (Math.sin(angle) + 1) / 2;
+      const y = shift + scale * (Math.cos(angle) + 1) / 2;
+      const r = rotation();
+      positions.push({ x, y, r });
+    }
+    return positions;
   }
 }
 export default new HullGenerator();
