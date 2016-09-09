@@ -125,7 +125,7 @@ class SpaceStore extends EventEmitter {
     const rotationSpeed = randomSpeed;
     const force = SpaceConstants.ASTEROID_SPEED / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
-    const hull = HullGenerator.theRocky();
+    const hull = HullGenerator.theMountain();
     this._addAsteroid(now, position, speed, hull, true);
   }
 

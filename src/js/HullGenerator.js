@@ -27,7 +27,7 @@ class HullGenerator {
   }
 
   /** Four tiny rocks toghether. */
-  theRocky() {
+  theRock() {
     const positions = this._positionsCross();
     const parts = [];
     positions.forEach((position) => {
@@ -35,6 +35,19 @@ class HullGenerator {
       parts.push({ hull, position });
     });
     const size = ASTEROID_SIZE * 2;
+    const onHit = [{ effect: "break" }];
+    return { parts, size, onHit };
+  }
+
+  /** Four big rocks toghether. */
+  theMountain() {
+    const positions = this._positionsCross();
+    const parts = [];
+    positions.forEach((position) => {
+      const hull = this.theRock();
+      parts.push({ hull, position });
+    });
+    const size = ASTEROID_SIZE * 4;
     const onHit = [{ effect: "break" }];
     return { parts, size, onHit };
   }
