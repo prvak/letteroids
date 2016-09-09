@@ -22,7 +22,7 @@ class HullGenerator {
     // Scale 0.8 - 1.2 of base size.
     const size = ASTEROID_SIZE * (random.double() * 0.4 + 0.8);
     const theme = "basic";
-    const onHit = [{"effect": "break"}];
+    const onHit = [{ effect: "break" }];
     return { symbol, size, theme, onHit };
   }
 
@@ -34,8 +34,9 @@ class HullGenerator {
       const hull = this.theTinyRock();
       parts.push({ hull, position });
     });
-    const size = ASTEROID_SIZE * 10;
-    return { parts, size };
+    const size = ASTEROID_SIZE * 2;
+    const onHit = [{ effect: "break" }];
+    return { parts, size, onHit };
   }
 
   theShip() {
