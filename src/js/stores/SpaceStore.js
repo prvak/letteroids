@@ -125,7 +125,7 @@ class SpaceStore extends EventEmitter {
     const rotationSpeed = randomSpeed;
     const force = SpaceConstants.ASTEROID_SPEED / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
-    const hull = HullGenerator.theCircle();
+    const hull = HullGenerator.theMountain(HullGenerator.theGranite);
     this._addAsteroid(now, position, speed, hull, true);
   }
 
@@ -438,6 +438,9 @@ class SpaceStore extends EventEmitter {
         const type = effect.get("effect");
         const health = hull.get("health");
         switch (type) {
+          case "color":
+            hull = hull.set("health", hull.get("health") - 1);
+            break;
           case "damage":
             hull = hull.set("health", hull.get("health") - 1);
             break;

@@ -16,22 +16,37 @@ const SHIP_SIZE = 2 * SIZE_UNIT;
 
 class HullGenerator {
   /** The most simple rock, size 1, breaks with one hit. */
-  theTinyRock() {
+  theRock() {
     // Choose random basic asteroid symbol.
     const symbol = random.choice(ASTEROID_SYMBOLS);
     // Scale 0.8 - 1.2 of base size.
     const size = ASTEROID_SIZE * (random.double() * 0.4 + 0.8);
-    const theme = "basic";
+    const color = "808080";
     const onHit = [{ effect: "break" }];
-    return { symbol, size, theme, onHit };
+    return { symbol, size, color, onHit };
   }
 
-  /** Four tiny rocks toghether. */
-  theRock() {
+  /** Durable small asteroid. Survives multiple hits. */
+  theGranite() {
+    const symbol = random.choice(ASTEROID_SYMBOLS);
+    // Scale 0.8 - 1.2 of base size.
+    const size = ASTEROID_SIZE * (random.double() * 0.4 + 0.8);
+    const health = 9;
+    const colors = [
+      "#808080", "#707070", "#606060", "#505050", "#404040",
+      "#303030", "#202020", "#101010", "#000000",
+    ];
+    const color = "808080";
+    const onHit = [{ effect: "damage" }, { effect: "break" }];
+    return { symbol, size, health, color, colors, onHit };
+  }
+
+  /** Four base asteroids toghether. */
+  theHill(base) {
     const positions = this._positionsCross();
     const parts = [];
     positions.forEach((position) => {
-      const hull = this.theTinyRock();
+      const hull = base();
       parts.push({ hull, position });
     });
     const size = ASTEROID_SIZE * 2;
@@ -39,12 +54,12 @@ class HullGenerator {
     return { parts, size, onHit };
   }
 
-  /** Four big rocks toghether. */
-  theMountain() {
+  /** Four Hills toghether. */
+  theMountain(base) {
     const positions = this._positionsCross();
     const parts = [];
     positions.forEach((position) => {
-      const hull = this.theRock();
+      const hull = this.theHill(base);
       parts.push({ hull, position });
     });
     const size = ASTEROID_SIZE * 4;
@@ -53,11 +68,11 @@ class HullGenerator {
   }
 
   /** Lot of tiny rocks in circle formation. */
-  theCircle() {
+  theCircle(base) {
     const positions = this._positionsCircle(16, 0.8);
     const parts = [];
     positions.forEach((position) => {
-      const hull = this.theTinyRock();
+      const hull = base();
       parts.push({ hull, position });
     });
     const size = ASTEROID_SIZE * 4;
@@ -69,15 +84,15 @@ class HullGenerator {
   theShip() {
     const size = SHIP_SIZE;
     const symbol = SHIP_SYMBOL;
-    const theme = "player";
-    return { symbol, size, theme };
+    const color = "red";
+    return { symbol, size, color };
   }
 
   theShot() {
     const size = SHOT_SIZE / 2;
     const symbol = SHOT_SYMBOL;
-    const theme = "player";
-    return { symbol, size, theme };
+    const color = "red";
+    return { symbol, size, color };
   }
 
   /** Generate four positions. */

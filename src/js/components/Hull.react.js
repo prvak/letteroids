@@ -43,9 +43,19 @@ class Hull extends React.Component {
       });
       return <span className="hull" style={style}>{hulls}</span>;
     } else if (symbol) {
-      const theme = this.props.hull.get("theme");
-      const classNames = `hull ${theme}`;
-      return <span className={classNames} style={style} >{symbol}</span>;
+      const colors = this.props.hull.get("colors");
+      let color = this.props.hull.get("color");
+      if (colors) {
+        // color is based on current health
+        const health = this.props.hull.get("health");
+        if (health <= 0) {
+          color = colors.get(0);
+        } else {
+          color = colors.get(health - 1);
+        }
+      }
+      style.color = color;
+      return <span className="hull" style={style} >{symbol}</span>;
     }
     throw new Error("Component does not have neither 'symbol' nor 'parts'!");
   }
