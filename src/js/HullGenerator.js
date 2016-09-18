@@ -8,6 +8,8 @@ const ASTEROID_SYMBOLS = ["@", "#", "$"];
 const SHIP_SYMBOL = "Δ";
 // Symbol representing a shot.
 const SHOT_SYMBOL = "*";
+// Symbol representing a collectable shot boost.
+const BOOST_SHOTS_SYMBOL = "*";
 // Basic size. All sizes are relative to this one.
 const SIZE_UNIT = 0.01;
 const SHOT_SIZE = SIZE_UNIT;
@@ -93,6 +95,26 @@ class HullGenerator {
     const symbol = SHOT_SYMBOL;
     const color = "red";
     return { symbol, size, color };
+  }
+
+  theShotBonus() {
+    const size = ASTEROID_SIZE;
+    const symbol = BOOST_SHOTS_SYMBOL;
+    const color = "green";
+    const onHit = [{ effect: "collect" }];
+    return { symbol, size, color, onHit };
+  }
+
+  theBigBonus() {
+    const positions = this._positionsCross();
+    const parts = [];
+    positions.forEach((position) => {
+      const hull = this.theShotBonus();
+      parts.push({ hull, position });
+    });
+    const size = ASTEROID_SIZE * 2;
+    const onHit = [{ effect: "break" }];
+    return { parts, size, onHit };
   }
 
   /** Generate four positions. */

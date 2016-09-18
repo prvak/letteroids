@@ -126,6 +126,7 @@ class SpaceStore extends EventEmitter {
     const force = SpaceConstants.ASTEROID_SPEED / scale;
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
     const hull = HullGenerator.theMountain(HullGenerator.theGranite);
+    // const hull = HullGenerator.theBigBonus();
     this._addAsteroid(now, position, speed, hull, true);
   }
 
@@ -366,52 +367,58 @@ class SpaceStore extends EventEmitter {
     forEachCollision(_shots, _asteroids, (shotParts, asteroidParts) => {
       const originalAsteroid = asteroidParts[asteroidParts.length - 1].object;
       const shot = shotParts[shotParts.length - 1].object;
-      const asteroid = this._onHit(now, asteroidParts);
-      _shots = _shots.delete(shot.get("id"));
+      const result = this._onHit(now, asteroidParts, "shot");
+      const asteroid = result.object;
       if (asteroid) {
         _asteroids = _asteroids.set(asteroid.get("id"), asteroid);
       } else {
         _asteroids = _asteroids.delete(originalAsteroid.get("id"));
       }
-      if (!_isGameOver) {
-        // Do not count score after game is over.
-        const hull = originalAsteroid.get("hull");
-        _score += SpaceConstants.SCORE_HIT / hull.get("size");
-      }
-      /*
-      const shot = shotParts[shotParts.length - 1].object;
-      const asteroid = asteroidParts[asteroidParts.length - 1].object;
-      _shots = _shots.delete(shot.get("id"));
-      _asteroids = _asteroids.delete(asteroid.get("id"));
-      const hull = asteroid.get("hull");
-      const parts = hull.get("parts");
-      if (parts && parts.size > 1) {
-        this._splitHull(now, asteroid);
+      if (result.pass) {
+        // Shot passes through the asteroid.
+      } else {
+        // Remove the shot.
+        _shots = _shots.delete(shot.get("id"));
         if (!_isGameOver) {
           // Do not count score after game is over.
+          const hull = originalAsteroid.get("hull");
           _score += SpaceConstants.SCORE_HIT / hull.get("size");
         }
-      } else {
-        this._junkHull(now, asteroid);
       }
-      */
     });
 
-    forEachCollision(_ships, _asteroids, (shipParts) => {
-      const ship = shipParts[shipParts.length - 1].object;
-      _ships = _ships.delete(ship.get("id"));
-      const position = ship.get("position").toJS();
-      const speed = ship.get("speed").toJS();
-      const hull = ship.get("hull");
-      this._junkHull(now, hull, position, speed);
-      _isGameOver = true;
-      this._saveHiScore();
+    forEachCollision(_ships, _asteroids, (shipParts, asteroidParts) => {
+      // Hit the asteroid.
+      const asteroidId = asteroidParts[asteroidParts.length - 1].object.get("id");
+      const result = this._onHit(now, asteroidParts, "ship");
+      const asteroid = result.object;
+      if (asteroid) {
+        _asteroids = _asteroids.set(asteroidId, asteroid);
+      } else {
+        _asteroids = _asteroids.delete(asteroidId);
+      }
+      console.log(result);
+      if (result.bonus) {
+        // Apply bonus to the ship.
+      } else if (result.pass) {
+        // Do nothing, ship passes through the asteroid.
+      } else {
+        // Break the ship.
+        const ship = shipParts[shipParts.length - 1].object;
+        const position = ship.get("position").toJS();
+        const speed = ship.get("speed").toJS();
+        const hull = ship.get("hull");
+        _ships = _ships.delete(ship.get("id"));
+        this._junkHull(now, hull, position, speed);
+        _isGameOver = true;
+        this._saveHiScore();
+      }
     });
 
     _lastTickTimestamp = now;
   }
 
-  _onHit(now, collidingParts) {
+  _onHit(now, collidingParts, hitSource) {
     const originalObject = collidingParts[collidingParts.length - 1].object;
     // Replace old hull within parent with the new hull.
     const updateParentHull = (parentHull, oldHull, newHull) => {
@@ -434,15 +441,23 @@ class SpaceStore extends EventEmitter {
     // Apply given effects on given hull.
     const applyEffects = (originalHull, position, effects) => {
       let hull = originalHull;
+      let bonus = null;
+      let pass = false;
       effects.forEach((effect) => {
         const type = effect.get("effect");
         const health = hull.get("health");
         switch (type) {
-          case "color":
-            hull = hull.set("health", hull.get("health") - 1);
-            break;
           case "damage":
             hull = hull.set("health", hull.get("health") - 1);
+            break;
+          case "collect":
+            if (hitSource === "ship") {
+              hull = null;
+              bonus = { speed: 1 }; // effect.get("bonus");
+              pass = true;
+            } else if (hitSource === "shot") {
+              pass = true; // shot passes through
+            }
             break;
           case "break":
           default:
@@ -463,17 +478,22 @@ class SpaceStore extends EventEmitter {
             break;
         }
       });
-      return hull;
+      return { hull, bonus, pass };
     };
     // Apply collision effects from smallest part to the biggest part.
     let hull = collidingParts[0].object.get("hull");
     let resonate = true;
+    let firstResult = null;
     for (let i = 0; i < collidingParts.length; i++) {
       const position = collidingParts[i].position;
       const effects = hull.get("onHit");
       if (effects && resonate) {
-        hull = applyEffects(hull, position, effects);
+        const result = applyEffects(hull, position, effects);
+        hull = result.hull;
         resonate = hull === null; // hull was destroyed, apply hit to parent
+        if (i === 0) {
+          firstResult = result;
+        }
       }
       if (i < collidingParts.length - 1) {
         const originalHull = collidingParts[i].object.get("hull");
@@ -484,9 +504,11 @@ class SpaceStore extends EventEmitter {
     }
     if (hull) {
       const rootObject = collidingParts[collidingParts.length - 1].object;
-      return rootObject.set("hull", hull);
+      const object = rootObject.set("hull", hull);
+      return { object, pass: firstResult.pass, bonus: firstResult.bonus };
     }
-    return null; // Object has been destroyed.
+    // Object has been destroyed.
+    return { object: null, pass: firstResult.pass, bonus: firstResult.bonus };
   }
 
   _splitHull(now, hull, position, speed) {
