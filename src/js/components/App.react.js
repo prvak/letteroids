@@ -7,6 +7,7 @@ import GameOverBox from "../components/GameOverBox.react";
 import ScoreBox from "../components/ScoreBox.react";
 import SpaceActions from "../actions/SpaceActions";
 import SpaceConstants from "../constants/SpaceConstants";
+import Analytics from "../Analytics";
 import HtmlUtils from "../HtmlUtils";
 import Random from "../Random";
 
@@ -177,6 +178,7 @@ class App extends React.Component {
   }
 
   componentDidMount() {
+    Analytics.logPageView();
     objectsStore.addChangeListener(this._onChange);
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
