@@ -23,7 +23,7 @@ class HullGenerator {
     const symbol = random.choice(ASTEROID_SYMBOLS);
     // Scale 0.8 - 1.2 of base size.
     const size = ASTEROID_SIZE * (random.double() * 0.4 + 0.8);
-    const color = "808080";
+    const color = "#808080";
     const onHit = [{ effect: "break" }];
     return { symbol, size, color, onHit };
   }

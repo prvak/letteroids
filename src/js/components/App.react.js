@@ -10,6 +10,7 @@ import SpaceConstants from "../constants/SpaceConstants";
 import Analytics from "../Analytics";
 import HtmlUtils from "../HtmlUtils";
 import Random from "../Random";
+import Missions from "../Missions";
 
 function getAppState() {
   return {
@@ -65,7 +66,8 @@ class App extends React.Component {
             return;
           default:
             if (this.state.isGameTerminated) {
-              SpaceActions.startGame(HtmlUtils.now());
+              SpaceActions.startGame(now);
+              SpaceActions.setMission(now, Missions.mission1());
               this._terminationTimer = null;
             } else if (this.state.isGamePaused) {
               SpaceActions.resumeGame(now);
@@ -183,7 +185,9 @@ class App extends React.Component {
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
     window.addEventListener("resize", this._onResize);
-    SpaceActions.startGame(HtmlUtils.now());
+    const now = HtmlUtils.now();
+    SpaceActions.startGame(now);
+    SpaceActions.setMission(now, Missions.mission1());
     this._startTickTimer();
     this._onResize();
   }
