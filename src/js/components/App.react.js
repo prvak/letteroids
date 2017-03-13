@@ -65,7 +65,7 @@ class App extends React.Component {
             return;
           default:
             if (this.state.isGameTerminated) {
-              SpaceActions.startGame(HtmlUtils.now());
+              SpaceActions.startGame(now);
               this._terminationTimer = null;
             } else if (this.state.isGamePaused) {
               SpaceActions.resumeGame(now);
@@ -183,7 +183,8 @@ class App extends React.Component {
     document.addEventListener("keydown", this._onKeyDown);
     document.addEventListener("keyup", this._onKeyUp);
     window.addEventListener("resize", this._onResize);
-    SpaceActions.startGame(HtmlUtils.now());
+    const now = HtmlUtils.now();
+    SpaceActions.startGame(now);
     this._startTickTimer();
     this._onResize();
   }

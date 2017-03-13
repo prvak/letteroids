@@ -2,6 +2,13 @@ import AppDispatcher from "../dispatcher/AppDispatcher";
 import ActionConstants from "../constants/ActionConstants";
 
 const SpaceActions = {
+  setMission: (now, mission) => {
+    AppDispatcher.dispatch({
+      actionType: ActionConstants.OBJECTS_SET_MISSION,
+      now,
+      mission,
+    });
+  },
   addAsteroid: (now) => {
     AppDispatcher.dispatch({
       actionType: ActionConstants.OBJECTS_ADD_ASTEROID,

@@ -34,7 +34,7 @@ const SpaceConstants = {
   // the smaller the reward.
   SCORE_HIT: 10,
   // How many times per second should we try to create a new asteroid.
-  ASTEROID_FREQUENCY: 5,
+  ASTEROID_FREQUENCY: 0.00001,
   // Base probability that a new asteroid will be created for each millisecond since last asteroid.
   // Increase this value for higher difficulty.
   ASTEROID_PROBABILITY: 0.000004,

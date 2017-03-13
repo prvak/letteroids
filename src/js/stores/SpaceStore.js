@@ -8,6 +8,7 @@ import VectorMath from "../VectorMath";
 import Random from "../Random";
 import HtmlUtils from "../HtmlUtils";
 import HullGenerator from "../HullGenerator";
+import MissionGenerator from "../MissionGenerator";
 
 const EventEmitter = events.EventEmitter;
 const random = new Random();
@@ -26,6 +27,8 @@ let _junk = new Immutable.Map({});
 let _nextObjectId = 1;
 // Timestamp of the last tick event.
 let _lastTickTimestamp = null;
+// Currently active mission.
+let _mission = null;
 // There is one ship. This is its id.
 let _shipId = null;
 let _isGameStarted = false;
@@ -88,6 +91,11 @@ class SpaceStore extends EventEmitter {
     this.removeListener(CHANGE_EVENT, callback);
   }
 
+  setMission(mission) {
+    _mission = mission;
+    _mission.duration = 0;
+  }
+
   addShip(now, position) {
     const id = `ship_${_nextObjectId++}`;
     const speed = { x: 0, y: 0, r: 0 };
@@ -97,7 +105,7 @@ class SpaceStore extends EventEmitter {
     _shipId = id;
   }
 
-  addAsteroid(now, scale = 3) {
+  addAsteroid(now, hull) {
     const startingConditions = [
       {
         position: { x: 0.5, y: 1.2, r: 0.0 },
@@ -123,10 +131,8 @@ class SpaceStore extends EventEmitter {
     const position = startingCondition.position;
     const direction = startingCondition.direction + randomDirection;
     const rotationSpeed = randomSpeed;
-    const force = SpaceConstants.ASTEROID_SPEED / scale;
+    const force = SpaceConstants.ASTEROID_SPEED / (hull.size * 100); // bigger asteroids are slower
     const speed = VectorMath.applyForce({ x: 0.0, y: 0.0, r: rotationSpeed }, direction, force);
-    const hull = HullGenerator.theMountain(HullGenerator.theGranite);
-    // const hull = HullGenerator.theBigBonus();
     this._addAsteroid(now, position, speed, hull, true);
   }
 
@@ -305,6 +311,73 @@ class SpaceStore extends EventEmitter {
     _junk = _junk.withMutations(update);
   }
 
+  _checkMissionTriggers(now) {
+    if (!_mission) {
+      return;
+    }
+    const isMissionFinished = () => {
+      if (_asteroids.size > 0) {
+        return false;
+      }
+      let allEventsTriggered = true;
+      _mission.events.some((event) => {
+        if (!event.trigger.triggered) {
+          allEventsTriggered = false;
+          return false;
+        }
+        return true;
+      });
+      return allEventsTriggered;
+    };
+    const isTriggered = (trigger) => {
+      if (trigger.triggered) {
+        return false;
+      }
+      let triggered = true;
+      trigger.conditions.forEach((condition) => {
+        if (!triggered) {
+          return;
+        }
+        switch (condition) {
+          case "time":
+            if (_mission.duration <= trigger.time) {
+              triggered = false;
+            }
+            break;
+          default:
+            throw new Error(`Unknown trigger condition '${condition}'`);
+        }
+      });
+      return triggered;
+    };
+    const applyEffect = (effect) => {
+      switch (effect.type) {
+        case "asteroids":
+          for (let i = 0; i < effect.count; i++) {
+            this.addAsteroid(now, effect.hull());
+          }
+          break;
+        default:
+          throw new Error(`Unknown trigger effect '${effect.type}'`);
+      }
+    };
+    // Increase mission duration.
+    _mission.duration += now - _lastTickTimestamp;
+    // Trigger mission events.
+    _mission.events.forEach((event) => {
+      const trigger = event.trigger;
+      if (isTriggered(trigger)) {
+        trigger.triggered = true;
+        const effect = event.effect;
+        applyEffect(effect);
+      }
+    });
+    // Start next mission if the current one is finished.
+    if (isMissionFinished()) {
+      this.setMission(MissionGenerator.mission1());
+    }
+  }
+
   handleTick(now) {
     if (_lastTickTimestamp === null) {
       this._resetTimestamps(now);
@@ -397,7 +470,6 @@ class SpaceStore extends EventEmitter {
       } else {
         _asteroids = _asteroids.delete(asteroidId);
       }
-      console.log(result);
       if (result.bonus) {
         // Apply bonus to the ship.
       } else if (result.pass) {
@@ -415,6 +487,7 @@ class SpaceStore extends EventEmitter {
       }
     });
 
+    this._checkMissionTriggers(now);
     _lastTickTimestamp = now;
   }
 
@@ -557,6 +630,7 @@ class SpaceStore extends EventEmitter {
     _hiScore = this._loadHiScore();
     _score = 0;
     this.addShip(0, { x: 0.5, y: 0.5, r: 0.0 });
+    this.setMission(MissionGenerator.mission1());
     this._resetTimestamps(now);
   }
 
@@ -618,6 +692,10 @@ AppDispatcher.register((action) => {
   switch (action.actionType) {
     case ActionConstants.OBJECTS_ADD_ASTEROID:
       store.addAsteroid(action.now);
+      store.emitChange();
+      break;
+    case ActionConstants.OBJECTS_SET_MISSION:
+      store.setMission(action.mission);
       store.emitChange();
       break;
     case ActionConstants.OBJECTS_ROTATE_SHIP:
